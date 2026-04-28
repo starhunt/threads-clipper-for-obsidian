@@ -421,3 +421,6 @@ input[type="number"] {
     color: var(--text-primary);
     font-size: 0.9rem;
 }
+
+.disabled-toggle { opacity: 0.6; cursor: not-allowed; }
+.disabled-toggle .toggle-slider { background-color: var(--border); }

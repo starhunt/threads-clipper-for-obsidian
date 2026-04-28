@@ -1,29 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Threads to Obsidian</title>
+    <title>Threads Clipper for Obsidian</title>
     <link rel="stylesheet" href="popup.css">
 </head>
-
 <body>
     <div class="popup-container">
         <header>
-            <h1>📝 Threads to Obsidian</h1>
+            <h1>📌 Threads Clipper</h1>
         </header>
 
         <main>
-            <!-- Connection Status -->
             <div class="status-card" id="statusCard">
-                <div class="status-indicator" id="statusIndicator"></div>
+                <div class="status-indicator connected" id="statusIndicator"></div>
                 <div class="status-text">
-                    <span id="statusMessage">연결 확인 중...</span>
+                    <span id="statusMessage">Obsidian URI 모드 준비 완료</span>
                 </div>
             </div>
 
-            <!-- Quick Stats -->
             <div class="stats-section">
                 <div class="stat-item">
                     <span class="stat-label">저장된 게시글</span>
@@ -35,7 +31,6 @@
                 </div>
             </div>
 
-            <!-- Quick Settings -->
             <div class="quick-settings">
                 <label class="toggle-row">
                     <span>좋아요 시 저장</span>
@@ -49,10 +44,9 @@
                 </label>
             </div>
 
-            <!-- Actions -->
             <div class="actions">
                 <button id="openOptions" class="btn btn-primary">⚙️ 설정</button>
-                <button id="testConnection" class="btn btn-secondary">🔍 연결 테스트</button>
+                <button id="howItWorks" class="btn btn-secondary">ℹ️ 사용법</button>
             </div>
         </main>
 
@@ -63,5 +57,4 @@
 
     <script src="popup.js"></script>
 </body>
-
 </html>

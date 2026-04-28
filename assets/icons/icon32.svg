@@ -1,10 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <defs>
-    <linearGradient id="grad32" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="6" fill="url(#grad32)"/>
-  <text x="16" y="22" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">T</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <rect width="256" height="256" rx="56" fill="#12121A"/>
+  <rect x="30" y="30" width="196" height="196" rx="46" stroke="#7D5CFF" stroke-width="10"/>
+  <path d="M72 44H184V198L128 153L72 198V44Z" fill="#7C3AED"/>
+  <path d="M92 78H164" stroke="#F5F3FF" stroke-width="12" stroke-linecap="round"/>
+  <path d="M92 110H164" stroke="#F5F3FF" stroke-width="12" stroke-linecap="round"/>
+  <path d="M92 142H146" stroke="#F5F3FF" stroke-width="12" stroke-linecap="round"/>
+  <path d="M185 52L216 82L191 115L165 84L185 52Z" fill="#22D3EE"/>
 </svg>

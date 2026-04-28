@@ -1,154 +1,508 @@
 {
-  "extName": { "message": "Threads to Obsidian" },
-  "extDesc": { "message": "Save Threads posts to Obsidian via Local REST API" },
-
-  "statusChecking": { "message": "Checking connection..." },
-  "statusConnected": { "message": "Connected to Obsidian" },
-  "statusFailed": { "message": "Connection failed" },
-  "statusError": { "message": "Connection error" },
-
-  "savedPosts": { "message": "Saved Posts" },
-  "today": { "message": "Today" },
-  "saveOnLike": { "message": "Save on Like" },
-  "saveOnSave": { "message": "Save on Save" },
-  "settings": { "message": "Settings" },
-  "testConnection": { "message": "Test Connection" },
-  "help": { "message": "Help" },
-
-  "optionsTitle": { "message": "Threads to Obsidian Settings" },
-  "optionsSubtitle": { "message": "Manage settings for saving Threads posts to Obsidian." },
-
-  "triggerSettings": { "message": "Trigger Settings" },
-  "triggerDesc": { "message": "Choose which actions trigger saving to Obsidian." },
-  "triggerLike": { "message": "Save on Like click" },
-  "triggerLikeHint": { "message": "Only saves when changing ♡ → ❤️." },
-  "triggerSave": { "message": "Save on Save click" },
-  "triggerSaveHint": { "message": "Only saves when bookmark is activated." },
-
-  "restApiSettings": { "message": "Obsidian Local REST API Settings" },
-  "restApiDesc": { "message": "Enter connection details for the Obsidian Local REST API plugin." },
-  "protocol": { "message": "Protocol" },
-  "host": { "message": "Host" },
-  "port": { "message": "Port" },
-  "apiKeyOptional": { "message": "API Key (optional)" },
-  "apiKeyPlaceholder": { "message": "Enter API Key" },
-  "apiKeyHint": { "message": "Authentication token from the REST API plugin" },
-  "connecting": { "message": "Connecting..." },
-
-  "aiProviderSettings": { "message": "AI Provider Settings" },
-  "aiProviderDesc": { "message": "Configure AI service for post summarization and transformation." },
-  "aiEnabled": { "message": "Enable AI Transformation" },
-  "aiDisabledHint": { "message": "When disabled, posts are saved as-is." },
-  "defaultProvider": { "message": "Default AI Provider" },
-  "customProvider": { "message": "Custom" },
-  "defaultProviderHint": { "message": "Select the AI provider to use. Configure each provider below." },
-  "maxOutputTokens": { "message": "Max Output Tokens" },
-  "maxTokensHint": { "message": "Maximum tokens for AI response (default: 64000)" },
-  "providerApiSetup": { "message": "Provider API Settings (expand to configure)" },
-  "model": { "message": "Model" },
-  "modelName": { "message": "Model Name" },
-  "customSelf": { "message": "Custom" },
-  "promptTemplate": { "message": "Transformation Prompt Template" },
-  "promptHint": { "message": "Prompt used for AI post transformation. Use {author} and {content} variables." },
-  "resetTemplate": { "message": "Restore Default Template" },
-  "configured": { "message": "Configured" },
-  "testing": { "message": "Testing..." },
-  "connSuccess": { "message": "Connected" },
-  "connFailed": { "message": "Connection failed" },
-  "enterApiKey": { "message": "Please enter API Key" },
-
-  "pathSettings": { "message": "Save Path Settings" },
-  "pathDesc": { "message": "Specify save locations within the Obsidian vault." },
-  "vaultName": { "message": "Vault Name" },
-  "vaultHint": { "message": "Obsidian vault name (required for click-to-open)" },
-  "notesFolder": { "message": "Notes Folder" },
-  "notesFolderHint": { "message": "Path relative to vault root" },
-  "yearMonthFolders": { "message": "Organize by Year/Month folders" },
-  "yearMonthHint": { "message": "Saves in Threads/2026/01/ format when enabled" },
-  "imageFolder": { "message": "Image Folder" },
-  "imageFolderHint": { "message": "Folder for downloaded images (same level as notes folder)" },
-  "imageFolderMode": { "message": "Image Save Mode" },
-  "imageModeFixed": { "message": "Use fixed folder (above setting)" },
-  "imageModeRelative": { "message": "Relative to notes folder (year/month_img)" },
-  "imageModeHint": { "message": "Creates _img folder alongside notes when relative" },
-
-  "fileNamingSettings": { "message": "Filename & Media Settings" },
-  "fileNameBasis": { "message": "Filename Basis" },
-  "nameByPostDate": { "message": "Post Date" },
-  "nameBySaveDate": { "message": "Save Date" },
-  "nameFormatHint": { "message": "Format: @author_YYYYMMDD_HHmm.md" },
-  "downloadImages": { "message": "Download Images Locally" },
-  "downloadImagesHint": { "message": "When disabled, only URL links are saved" },
-  "showNotification": { "message": "Show Save Notification" },
-
-  "saveBtn": { "message": "Save Settings" },
-  "resetBtn": { "message": "Restore Defaults" },
-  "settingsSaved": { "message": "Settings saved." },
-  "settingsReset": { "message": "Restored to default settings." },
-  "templateReset": { "message": "Restored default template." },
-  "permissionDenied": { "message": "Permission denied for $1. The endpoint may not work.", "placeholders": { "1": { "content": "$1" } } },
-
-  "toastSaved": { "message": "Saved to Obsidian" },
-  "toastSavedImgFail": { "message": "Saved to Obsidian ($1 image(s) failed)", "placeholders": { "1": { "content": "$1" } } },
-  "toastClickToOpen": { "message": "Click to open" },
-  "toastSetVault": { "message": "Set vault name in settings" },
-  "toastAiStart": { "message": "Starting AI processing..." },
-  "toastExtReload": { "message": "Extension updated. Please reload the page." },
-  "toastAiDelay": { "message": "AI processing delayed. Check Obsidian." },
-  "toastDetailPage": { "message": "Please use the save button on the detail page." },
-
-  "stageTitle": { "message": "Generating title..." },
-  "stageContent": { "message": "Transforming content..." },
-  "stageSaving": { "message": "Saving..." },
-  "stageProcessing": { "message": "Processing..." },
-
-  "mdPostInfo": { "message": "Post Info" },
-  "mdAuthor": { "message": "Author" },
-  "mdPostUrl": { "message": "Post URL" },
-  "mdViewOnThreads": { "message": "View on Threads" },
-  "mdPostDate": { "message": "Post Date" },
-  "mdSavedDate": { "message": "Saved Date" },
-  "mdTopic": { "message": "Topic" },
-  "mdOriginal": { "message": "Original" },
-  "mdMedia": { "message": "Media" },
-  "mdMyNotes": { "message": "My Notes" },
-  "mdRelatedKnowledge": { "message": "Related Knowledge" },
-  "mdIdeas": { "message": "Ideas" },
-  "mdMemos": { "message": "Memos" },
-  "mdUnknown": { "message": "Unknown" },
-  "mdRepostBy": { "message": "Repost by $1", "placeholders": { "1": { "content": "$1" } } },
-  "mdQuoteBy": { "message": "Quote by $1", "placeholders": { "1": { "content": "$1" } } },
-  "mdThreadBy": { "message": "Thread by $1 ($2 posts)", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
-  "mdPostBy": { "message": "Post by $1", "placeholders": { "1": { "content": "$1" } } },
-  "mdQuotedOriginal": { "message": "Quoted Original" },
-  "mdMainContent": { "message": "Content" },
-  "mdTag": { "message": "Tag" },
-  "mdReposter": { "message": "Reposter" },
-  "mdItem": { "message": "Item" },
-  "mdValue": { "message": "Details" },
-  "mdChainedPosts": { "message": "Chained Posts" },
-
-  "errApiKeyMissing": { "message": "API key is not configured." },
-  "errCustomEndpoint": { "message": "Custom endpoint is not configured." },
-  "errUnsupportedProvider": { "message": "Unsupported provider: $1", "placeholders": { "1": { "content": "$1" } } },
-  "errApiError": { "message": "API error ($1): $2", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
-  "errInvalidResponse": { "message": "Invalid AI response format." },
-  "errAuth": { "message": "Authentication failed ($1): Check API key", "placeholders": { "1": { "content": "$1" } } },
-  "errForbidden": { "message": "Access denied ($1): Check permissions", "placeholders": { "1": { "content": "$1" } } },
-  "errNotFound": { "message": "Path not found ($1): Check if folder exists", "placeholders": { "1": { "content": "$1" } } },
-  "errRateLimit": { "message": "Rate limit exceeded ($1): Try again later", "placeholders": { "1": { "content": "$1" } } },
-  "errServer": { "message": "Server error ($1): Check Obsidian ($2)", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
-  "errGeneric": { "message": "$1 failed: HTTP $2", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
-  "errConnTimeout": { "message": "Connection timeout (10s)" },
-  "errConnError": { "message": "Connection error: $1", "placeholders": { "1": { "content": "$1" } } },
-  "errNoteSave": { "message": "note save" },
-  "errImageDownload": { "message": "image download" },
-  "errImageSave": { "message": "image save" },
-  "errAiDisabled": { "message": "AI transformation is disabled." },
-  "errNoApiKey": { "message": "API key is not configured." },
-  "errAiServiceLoad": { "message": "Failed to load AI service." },
-  "errAiEmptyResponse": { "message": "AI returned an empty response." },
-
-  "aiTestPrompt": { "message": "Hello. This is a connection test. Please respond with \"connection successful\" only." },
-  "aiTestSuccess": { "message": "Connected! Response: $1...", "placeholders": { "1": { "content": "$1" } } }
+  "extName": {
+    "message": "Threads Clipper for Obsidian"
+  },
+  "extDesc": {
+    "message": "Save Threads posts to your Obsidian vault on like or bookmark."
+  },
+  "statusChecking": {
+    "message": "Checking connection..."
+  },
+  "statusConnected": {
+    "message": "Connected to Obsidian"
+  },
+  "statusFailed": {
+    "message": "Connection failed"
+  },
+  "statusError": {
+    "message": "Connection error"
+  },
+  "savedPosts": {
+    "message": "Saved Posts"
+  },
+  "today": {
+    "message": "Today"
+  },
+  "saveOnLike": {
+    "message": "Save on Like"
+  },
+  "saveOnSave": {
+    "message": "Save on Save"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "testConnection": {
+    "message": "Test Connection"
+  },
+  "help": {
+    "message": "Help"
+  },
+  "optionsTitle": {
+    "message": "Threads to Obsidian Settings"
+  },
+  "optionsSubtitle": {
+    "message": "Manage settings for saving Threads posts to Obsidian."
+  },
+  "triggerSettings": {
+    "message": "Trigger Settings"
+  },
+  "triggerDesc": {
+    "message": "Choose which actions trigger saving to Obsidian."
+  },
+  "triggerLike": {
+    "message": "Save on Like click"
+  },
+  "triggerLikeHint": {
+    "message": "Only saves when changing ♡ → ❤️."
+  },
+  "triggerSave": {
+    "message": "Save on Save click"
+  },
+  "triggerSaveHint": {
+    "message": "Only saves when bookmark is activated."
+  },
+  "restApiSettings": {
+    "message": "Obsidian Local REST API Settings"
+  },
+  "restApiDesc": {
+    "message": "Enter connection details for the Obsidian Local REST API plugin."
+  },
+  "protocol": {
+    "message": "Protocol"
+  },
+  "host": {
+    "message": "Host"
+  },
+  "port": {
+    "message": "Port"
+  },
+  "apiKeyOptional": {
+    "message": "API Key (optional)"
+  },
+  "apiKeyPlaceholder": {
+    "message": "Enter API Key"
+  },
+  "apiKeyHint": {
+    "message": "Authentication token from the REST API plugin"
+  },
+  "connecting": {
+    "message": "Connecting..."
+  },
+  "aiProviderSettings": {
+    "message": "AI Provider Settings"
+  },
+  "aiProviderDesc": {
+    "message": "Configure AI service for post summarization and transformation."
+  },
+  "aiEnabled": {
+    "message": "Enable AI Transformation"
+  },
+  "aiDisabledHint": {
+    "message": "When disabled, posts are saved as-is."
+  },
+  "defaultProvider": {
+    "message": "Default AI Provider"
+  },
+  "customProvider": {
+    "message": "Custom"
+  },
+  "defaultProviderHint": {
+    "message": "Select the AI provider to use. Configure each provider below."
+  },
+  "maxOutputTokens": {
+    "message": "Max Output Tokens"
+  },
+  "maxTokensHint": {
+    "message": "Maximum tokens for AI response (default: 64000)"
+  },
+  "providerApiSetup": {
+    "message": "Provider API Settings (expand to configure)"
+  },
+  "model": {
+    "message": "Model"
+  },
+  "modelName": {
+    "message": "Model Name"
+  },
+  "customSelf": {
+    "message": "Custom"
+  },
+  "promptTemplate": {
+    "message": "Transformation Prompt Template"
+  },
+  "promptHint": {
+    "message": "Prompt used for AI post transformation. Use {author} and {content} variables."
+  },
+  "resetTemplate": {
+    "message": "Restore Default Template"
+  },
+  "configured": {
+    "message": "Configured"
+  },
+  "testing": {
+    "message": "Testing..."
+  },
+  "connSuccess": {
+    "message": "Connected"
+  },
+  "connFailed": {
+    "message": "Connection failed"
+  },
+  "enterApiKey": {
+    "message": "Please enter API Key"
+  },
+  "pathSettings": {
+    "message": "Save Path Settings"
+  },
+  "pathDesc": {
+    "message": "Specify save locations within the Obsidian vault."
+  },
+  "vaultName": {
+    "message": "Vault Name"
+  },
+  "vaultHint": {
+    "message": "Obsidian vault name (required for click-to-open)"
+  },
+  "notesFolder": {
+    "message": "Notes Folder"
+  },
+  "notesFolderHint": {
+    "message": "Path relative to vault root"
+  },
+  "yearMonthFolders": {
+    "message": "Organize by Year/Month folders"
+  },
+  "yearMonthHint": {
+    "message": "Saves in Threads/2026/01/ format when enabled"
+  },
+  "imageFolder": {
+    "message": "Image Folder"
+  },
+  "imageFolderHint": {
+    "message": "Folder for downloaded images (same level as notes folder)"
+  },
+  "imageFolderMode": {
+    "message": "Image Save Mode"
+  },
+  "imageModeFixed": {
+    "message": "Use fixed folder (above setting)"
+  },
+  "imageModeRelative": {
+    "message": "Relative to notes folder (year/month_img)"
+  },
+  "imageModeHint": {
+    "message": "Creates _img folder alongside notes when relative"
+  },
+  "fileNamingSettings": {
+    "message": "Filename & Media Settings"
+  },
+  "fileNameBasis": {
+    "message": "Filename Basis"
+  },
+  "nameByPostDate": {
+    "message": "Post Date"
+  },
+  "nameBySaveDate": {
+    "message": "Save Date"
+  },
+  "nameFormatHint": {
+    "message": "Format: @author_YYYYMMDD_HHmm.md"
+  },
+  "downloadImages": {
+    "message": "Download Images Locally"
+  },
+  "downloadImagesHint": {
+    "message": "When disabled, only URL links are saved"
+  },
+  "showNotification": {
+    "message": "Show Save Notification"
+  },
+  "saveBtn": {
+    "message": "Save Settings"
+  },
+  "resetBtn": {
+    "message": "Restore Defaults"
+  },
+  "settingsSaved": {
+    "message": "Settings saved."
+  },
+  "settingsReset": {
+    "message": "Restored to default settings."
+  },
+  "templateReset": {
+    "message": "Restored default template."
+  },
+  "permissionDenied": {
+    "message": "Permission denied for $1. The endpoint may not work.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastSaved": {
+    "message": "Saved to Obsidian"
+  },
+  "toastSavedImgFail": {
+    "message": "Saved to Obsidian ($1 image(s) failed)",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "toastClickToOpen": {
+    "message": "Click to open"
+  },
+  "toastSetVault": {
+    "message": "Set vault name in settings"
+  },
+  "toastAiStart": {
+    "message": "Starting AI processing..."
+  },
+  "toastExtReload": {
+    "message": "Extension updated. Please reload the page."
+  },
+  "toastAiDelay": {
+    "message": "AI processing delayed. Check Obsidian."
+  },
+  "toastDetailPage": {
+    "message": "Please use the save button on the detail page."
+  },
+  "stageTitle": {
+    "message": "Generating title..."
+  },
+  "stageContent": {
+    "message": "Transforming content..."
+  },
+  "stageSaving": {
+    "message": "Saving..."
+  },
+  "stageProcessing": {
+    "message": "Processing..."
+  },
+  "mdPostInfo": {
+    "message": "Post Info"
+  },
+  "mdAuthor": {
+    "message": "Author"
+  },
+  "mdPostUrl": {
+    "message": "Post URL"
+  },
+  "mdViewOnThreads": {
+    "message": "View on Threads"
+  },
+  "mdPostDate": {
+    "message": "Post Date"
+  },
+  "mdSavedDate": {
+    "message": "Saved Date"
+  },
+  "mdTopic": {
+    "message": "Topic"
+  },
+  "mdOriginal": {
+    "message": "Original"
+  },
+  "mdMedia": {
+    "message": "Media"
+  },
+  "mdMyNotes": {
+    "message": "My Notes"
+  },
+  "mdRelatedKnowledge": {
+    "message": "Related Knowledge"
+  },
+  "mdIdeas": {
+    "message": "Ideas"
+  },
+  "mdMemos": {
+    "message": "Memos"
+  },
+  "mdUnknown": {
+    "message": "Unknown"
+  },
+  "mdRepostBy": {
+    "message": "Repost by $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdQuoteBy": {
+    "message": "Quote by $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdThreadBy": {
+    "message": "Thread by $1 ($2 posts)",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "mdPostBy": {
+    "message": "Post by $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "mdQuotedOriginal": {
+    "message": "Quoted Original"
+  },
+  "mdMainContent": {
+    "message": "Content"
+  },
+  "mdTag": {
+    "message": "Tag"
+  },
+  "mdReposter": {
+    "message": "Reposter"
+  },
+  "mdItem": {
+    "message": "Item"
+  },
+  "mdValue": {
+    "message": "Details"
+  },
+  "mdChainedPosts": {
+    "message": "Chained Posts"
+  },
+  "errApiKeyMissing": {
+    "message": "API key is not configured."
+  },
+  "errCustomEndpoint": {
+    "message": "Custom endpoint is not configured."
+  },
+  "errUnsupportedProvider": {
+    "message": "Unsupported provider: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errApiError": {
+    "message": "API error ($1): $2",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "errInvalidResponse": {
+    "message": "Invalid AI response format."
+  },
+  "errAuth": {
+    "message": "Authentication failed ($1): Check API key",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errForbidden": {
+    "message": "Access denied ($1): Check permissions",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNotFound": {
+    "message": "Path not found ($1): Check if folder exists",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errRateLimit": {
+    "message": "Rate limit exceeded ($1): Try again later",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errServer": {
+    "message": "Server error ($1): Check Obsidian ($2)",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "errGeneric": {
+    "message": "$1 failed: HTTP $2",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "errConnTimeout": {
+    "message": "Connection timeout (10s)"
+  },
+  "errConnError": {
+    "message": "Connection error: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errNoteSave": {
+    "message": "note save"
+  },
+  "errImageDownload": {
+    "message": "image download"
+  },
+  "errImageSave": {
+    "message": "image save"
+  },
+  "errAiDisabled": {
+    "message": "AI transformation is disabled."
+  },
+  "errNoApiKey": {
+    "message": "API key is not configured."
+  },
+  "errAiServiceLoad": {
+    "message": "Failed to load AI service."
+  },
+  "errAiEmptyResponse": {
+    "message": "AI returned an empty response."
+  },
+  "aiTestPrompt": {
+    "message": "Hello. This is a connection test. Please respond with \"connection successful\" only."
+  },
+  "aiTestSuccess": {
+    "message": "Connected! Response: $1...",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  }
 }

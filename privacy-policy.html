@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Threads Clipper for Obsidian</title>
+  <meta name="description" content="Privacy Policy for Threads Clipper for Obsidian" />
+  <style>
+    :root {
+      --bg: #f7f7fb;
+      --card: #ffffff;
+      --text: #171717;
+      --muted: #666b78;
+      --border: #e7e9f0;
+      --accent: #6d4aff;
+      --accent-soft: #f1edff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(180deg, #f5f3ff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 20px 72px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 16px 48px rgba(20, 20, 40, 0.08);
+      overflow: hidden;
+    }
+    .hero {
+      padding: 40px 40px 28px;
+      background: linear-gradient(180deg, #fcfbff 0%, #ffffff 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .content {
+      padding: 34px 40px 42px;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 10px 22px; }
+    li { margin: 8px 0; }
+    code {
+      background: #f3f4f8;
+      border: 1px solid #e5e7ef;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.95em;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    .footer {
+      margin-top: 26px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 14px;
+    }
+    @media (max-width: 640px) {
+      .hero, .content { padding: 28px 22px; }
+      h1 { font-size: 28px; }
+      h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <header class="hero">
+        <div class="badge">Threads Clipper for Obsidian</div>
+        <h1>Privacy Policy</h1>
+        <p class="subtitle">Last updated: 2026-04-28</p>
+      </header>
+
+      <div class="content">
+        <p>
+          Threads Clipper for Obsidian is a Chrome extension that prepares Threads posts as notes and sends them into your local Obsidian app through the Obsidian URI scheme.
+        </p>
+
+        <h2>What data the extension processes</h2>
+        <p>The extension processes only the data needed to provide the clipping feature:</p>
+        <ul>
+          <li>Threads post content that you explicitly trigger by Like or Bookmark</li>
+          <li>Post metadata such as author handle, URL, timestamp, hashtags, and media links</li>
+          <li>Extension settings such as vault name and note path preferences</li>
+          <li>Optional local usage counters such as total saved posts and today's saved posts</li>
+        </ul>
+
+        <h2>Where data is stored</h2>
+        <ul>
+          <li>Extension settings are stored in Chrome extension storage on your device</li>
+          <li>Saved counters are stored in local extension storage on your device</li>
+          <li>Notes are created inside your own Obsidian vault through the <code>obsidian://new</code> URI flow</li>
+          <li>The extension does not operate any backend server for analytics or collection</li>
+        </ul>
+
+        <h2>External network access</h2>
+        <p>The extension sends requests only to:</p>
+        <ol>
+          <li>Threads domains (<code>threads.net</code>, <code>threads.com</code>) where the extension runs</li>
+          <li>Threads media CDNs referenced by post content</li>
+          <li>The local Obsidian application via the <code>obsidian://</code> URI handler on your device</li>
+        </ol>
+        <p>
+          The extension does not send data to AI providers, local REST API servers, ad networks, analytics services, or remote developer-controlled servers.
+        </p>
+
+        <h2>Data sharing</h2>
+        <p>
+          The extension does not sell, transfer, or use personal data for advertising, profiling, or analytics.
+        </p>
+
+        <h2>Data retention and deletion</h2>
+        <ul>
+          <li>You can remove extension data by uninstalling the extension or clearing extension storage in Chrome</li>
+          <li>Saved notes remain in your Obsidian vault until you remove them there</li>
+        </ul>
+
+        <h2>Contact</h2>
+        <p>
+          GitHub repository issues:
+          <a href="https://github.com/starhunt/sns_to_obsidian/issues">https://github.com/starhunt/sns_to_obsidian/issues</a>
+        </p>
+
+        <div class="footer">
+          This page is intended to be published as a public privacy policy page for Chrome Web Store review and users.
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

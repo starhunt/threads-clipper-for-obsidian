@@ -1,56 +1,43 @@
-# Privacy Policy — Threads to Obsidian
+# Privacy Policy — Threads Clipper for Obsidian
 
-Last updated: 2026-03-23
+Last updated: 2026-04-28
 
-Threads to Obsidian is a Chrome extension that saves Threads posts to your own Obsidian vault through the Obsidian Local REST API.
+Threads Clipper for Obsidian is a Chrome extension that prepares Threads posts as notes and sends them into your local Obsidian app through the Obsidian URI scheme.
 
 ## What data the extension processes
 
-The extension processes only the data needed to provide its features:
+The extension processes only the data needed to provide the clipping feature:
 
-- Threads post content you explicitly trigger via Like/Bookmark
-- Post metadata (author handle, URL, timestamp, hashtags/media links)
-- Extension settings you enter (vault path settings, API endpoint settings, optional AI provider keys)
-- Optional usage counters (local saved count/today count)
+- Threads post content that you explicitly trigger by Like or Bookmark
+- Post metadata such as author handle, URL, timestamp, hashtags, and media links
+- Extension settings such as vault name and note path preferences
+- Optional local usage counters such as total saved posts and today's saved posts
 
 ## Where data is stored
 
-- Extension settings are stored in Chrome storage (`chrome.storage.sync` / `chrome.storage.local`).
-- Notes are written to your own Obsidian vault via your local Obsidian Local REST API.
-- The extension does **not** operate a backend server for collection or analytics.
+- Extension settings are stored in Chrome extension storage on your device
+- Saved counters are stored in local extension storage on your device
+- Notes are created inside your own Obsidian vault through the `obsidian://new` URI flow
+- The extension does not operate any backend server for analytics or collection
 
 ## External network access
 
-The extension may send requests to:
+The extension sends requests only to:
 
-1. Local Obsidian Local REST API (`localhost` / `127.0.0.1`) to save notes and media.
-2. Optional AI providers only if AI transformation is enabled by you and configured by you:
-   - OpenAI
-   - Google Gemini
-   - Anthropic
-   - xAI (Grok)
-   - Z.AI
+1. Threads domains (`threads.net`, `threads.com`) where the extension runs
+2. Threads media CDNs referenced by post content
+3. The local Obsidian application via the `obsidian://` URI handler on your device
 
-No requests are sent to AI providers unless you enable AI and provide credentials.
-
-## API keys and secrets
-
-- API keys are stored in your browser storage for extension functionality.
-- The developer does not receive, collect, or transmit your API keys to a separate service.
-- You are responsible for managing and revoking your own provider keys.
+The extension does not send data to AI providers, local REST API servers, ad networks, analytics services, or remote developer-controlled servers.
 
 ## Data sharing
 
-The extension does not sell or share user data with third parties for advertising or profiling.
+The extension does not sell, transfer, or use personal data for advertising, profiling, or analytics.
 
 ## Data retention and deletion
 
-- You can remove extension data by uninstalling the extension and/or clearing extension storage in Chrome.
-- Saved notes remain in your Obsidian vault until you delete them.
-
-## Children’s privacy
-
-This extension is not directed to children under 13.
+- You can remove extension data by uninstalling the extension or clearing extension storage in Chrome
+- Saved notes remain in your Obsidian vault until you remove them there
 
 ## Contact
 
