@@ -1,508 +1,154 @@
 {
-  "extName": {
-    "message": "Threads Clipper for Obsidian"
-  },
-  "extDesc": {
-    "message": "좋아요나 저장한 Threads 게시글을 Obsidian 볼트에 저장합니다."
-  },
-  "statusChecking": {
-    "message": "연결 확인 중..."
-  },
-  "statusConnected": {
-    "message": "Obsidian 연결됨"
-  },
-  "statusFailed": {
-    "message": "연결 실패"
-  },
-  "statusError": {
-    "message": "연결 오류"
-  },
-  "savedPosts": {
-    "message": "저장된 게시글"
-  },
-  "today": {
-    "message": "오늘"
-  },
-  "saveOnLike": {
-    "message": "좋아요 시 저장"
-  },
-  "saveOnSave": {
-    "message": "저장 시 저장"
-  },
-  "settings": {
-    "message": "설정"
-  },
-  "testConnection": {
-    "message": "연결 테스트"
-  },
-  "help": {
-    "message": "도움말"
-  },
-  "optionsTitle": {
-    "message": "Threads to Obsidian 설정"
-  },
-  "optionsSubtitle": {
-    "message": "Threads 게시글을 Obsidian에 저장하는 설정을 관리합니다."
-  },
-  "triggerSettings": {
-    "message": "트리거 설정"
-  },
-  "triggerDesc": {
-    "message": "어떤 버튼을 클릭했을 때 저장할지 선택합니다."
-  },
-  "triggerLike": {
-    "message": "좋아요 클릭 시 저장"
-  },
-  "triggerLikeHint": {
-    "message": "♡ → ❤️ 변경 시에만 저장됩니다."
-  },
-  "triggerSave": {
-    "message": "저장 클릭 시 저장"
-  },
-  "triggerSaveHint": {
-    "message": "북마크 활성화 시에만 저장됩니다."
-  },
-  "restApiSettings": {
-    "message": "Obsidian Local REST API 설정"
-  },
-  "restApiDesc": {
-    "message": "Obsidian의 Local REST API 플러그인 연결 정보를 입력합니다."
-  },
-  "protocol": {
-    "message": "프로토콜"
-  },
-  "host": {
-    "message": "호스트"
-  },
-  "port": {
-    "message": "포트"
-  },
-  "apiKeyOptional": {
-    "message": "API Key (선택)"
-  },
-  "apiKeyPlaceholder": {
-    "message": "API Key를 입력하세요"
-  },
-  "apiKeyHint": {
-    "message": "REST API 플러그인에서 설정한 인증 토큰"
-  },
-  "connecting": {
-    "message": "연결 중..."
-  },
-  "aiProviderSettings": {
-    "message": "AI 프로바이더 설정"
-  },
-  "aiProviderDesc": {
-    "message": "게시글 요약 및 변환에 사용할 AI 서비스를 설정합니다."
-  },
-  "aiEnabled": {
-    "message": "AI 변환 사용"
-  },
-  "aiDisabledHint": {
-    "message": "비활성화 시 원본 그대로 저장됩니다."
-  },
-  "defaultProvider": {
-    "message": "기본 AI 프로바이더"
-  },
-  "customProvider": {
-    "message": "직접 설정"
-  },
-  "defaultProviderHint": {
-    "message": "저장 시 사용할 AI 프로바이더를 선택합니다. 아래에서 각 프로바이더별 설정을 미리 해두세요."
-  },
-  "maxOutputTokens": {
-    "message": "최대 출력 토큰"
-  },
-  "maxTokensHint": {
-    "message": "AI 응답의 최대 토큰 수 (기본: 64000)"
-  },
-  "providerApiSetup": {
-    "message": "프로바이더별 API 설정 (펼쳐서 설정)"
-  },
-  "model": {
-    "message": "모델"
-  },
-  "modelName": {
-    "message": "모델 이름"
-  },
-  "customSelf": {
-    "message": "Custom (직접 설정)"
-  },
-  "promptTemplate": {
-    "message": "변환 프롬프트 템플릿"
-  },
-  "promptHint": {
-    "message": "AI가 게시글을 변환할 때 사용하는 프롬프트입니다. {author}, {content} 변수를 사용할 수 있습니다."
-  },
-  "resetTemplate": {
-    "message": "기본 템플릿 복원"
-  },
-  "configured": {
-    "message": "설정됨"
-  },
-  "testing": {
-    "message": "테스트 중..."
-  },
-  "connSuccess": {
-    "message": "연결 성공"
-  },
-  "connFailed": {
-    "message": "연결 실패"
-  },
-  "enterApiKey": {
-    "message": "API Key를 입력하세요"
-  },
-  "pathSettings": {
-    "message": "저장 경로 설정"
-  },
-  "pathDesc": {
-    "message": "Obsidian vault 내 저장 위치를 지정합니다."
-  },
-  "vaultName": {
-    "message": "볼트 이름"
-  },
-  "vaultHint": {
-    "message": "Obsidian 볼트 이름 (토스트 클릭으로 파일 열기에 필요)"
-  },
-  "notesFolder": {
-    "message": "노트 저장 폴더"
-  },
-  "notesFolderHint": {
-    "message": "Obsidian vault 최상위 기준 경로"
-  },
-  "yearMonthFolders": {
-    "message": "년도/월 폴더로 구분"
-  },
-  "yearMonthHint": {
-    "message": "활성화 시 Threads/2026/01/ 형식으로 저장"
-  },
-  "imageFolder": {
-    "message": "이미지 저장 폴더"
-  },
-  "imageFolderHint": {
-    "message": "이미지를 저장할 폴더 (노트 폴더와 같은 레벨)"
-  },
-  "imageFolderMode": {
-    "message": "이미지 저장 방식"
-  },
-  "imageModeFixed": {
-    "message": "고정 폴더 사용 (위 설정값)"
-  },
-  "imageModeRelative": {
-    "message": "노트 폴더 연동 (년도/월_img)"
-  },
-  "imageModeHint": {
-    "message": "연동 시 노트와 같은 위치에 _img 폴더 생성"
-  },
-  "fileNamingSettings": {
-    "message": "파일명 및 미디어 설정"
-  },
-  "fileNameBasis": {
-    "message": "파일명 기준"
-  },
-  "nameByPostDate": {
-    "message": "게시글 등록일"
-  },
-  "nameBySaveDate": {
-    "message": "저장일"
-  },
-  "nameFormatHint": {
-    "message": "형식: @작성자_YYYYMMDD_HHmm.md"
-  },
-  "downloadImages": {
-    "message": "이미지 로컬 다운로드"
-  },
-  "downloadImagesHint": {
-    "message": "비활성화 시 URL 링크만 저장"
-  },
-  "showNotification": {
-    "message": "저장 완료 알림 표시"
-  },
-  "saveBtn": {
-    "message": "설정 저장"
-  },
-  "resetBtn": {
-    "message": "기본값 복원"
-  },
-  "settingsSaved": {
-    "message": "설정이 저장되었습니다."
-  },
-  "settingsReset": {
-    "message": "기본 설정으로 복원되었습니다."
-  },
-  "templateReset": {
-    "message": "기본 템플릿으로 복원되었습니다."
-  },
-  "permissionDenied": {
-    "message": "$1 접근 권한이 거부되었습니다. 해당 엔드포인트가 작동하지 않을 수 있습니다.",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "toastSaved": {
-    "message": "Obsidian에 저장됨"
-  },
-  "toastSavedImgFail": {
-    "message": "Obsidian에 저장됨 (이미지 $1개 실패)",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "toastClickToOpen": {
-    "message": "클릭하여 열기"
-  },
-  "toastSetVault": {
-    "message": "설정에서 볼트 이름을 입력하세요"
-  },
-  "toastAiStart": {
-    "message": "AI 처리 시작..."
-  },
-  "toastExtReload": {
-    "message": "확장 프로그램이 갱신되었습니다. 페이지를 새로고침해주세요."
-  },
-  "toastAiDelay": {
-    "message": "AI 처리가 지연되고 있습니다. Obsidian에서 확인해주세요."
-  },
-  "toastDetailPage": {
-    "message": "상세 페이지에서 저장 버튼을 사용해주세요."
-  },
-  "stageTitle": {
-    "message": "제목 생성 중..."
-  },
-  "stageContent": {
-    "message": "본문 변환 중..."
-  },
-  "stageSaving": {
-    "message": "저장 중..."
-  },
-  "stageProcessing": {
-    "message": "처리 중..."
-  },
-  "mdPostInfo": {
-    "message": "게시글 정보"
-  },
-  "mdAuthor": {
-    "message": "게시자"
-  },
-  "mdPostUrl": {
-    "message": "게시URL"
-  },
-  "mdViewOnThreads": {
-    "message": "Threads에서 보기"
-  },
-  "mdPostDate": {
-    "message": "게시일"
-  },
-  "mdSavedDate": {
-    "message": "저장일"
-  },
-  "mdTopic": {
-    "message": "주제"
-  },
-  "mdOriginal": {
-    "message": "원문"
-  },
-  "mdMedia": {
-    "message": "미디어"
-  },
-  "mdMyNotes": {
-    "message": "My Notes"
-  },
-  "mdRelatedKnowledge": {
-    "message": "관련 지식"
-  },
-  "mdIdeas": {
-    "message": "아이디어"
-  },
-  "mdMemos": {
-    "message": "메모"
-  },
-  "mdUnknown": {
-    "message": "알 수 없음"
-  },
-  "mdRepostBy": {
-    "message": "리포스트 by $1",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "mdQuoteBy": {
-    "message": "$1의 인용",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "mdThreadBy": {
-    "message": "$1의 스레드 ($2개 글)",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      },
-      "2": {
-        "content": "$2"
-      }
-    }
-  },
-  "mdPostBy": {
-    "message": "$1의 게시글",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "mdQuotedOriginal": {
-    "message": "인용된 원본"
-  },
-  "mdMainContent": {
-    "message": "본문"
-  },
-  "mdTag": {
-    "message": "태그"
-  },
-  "mdReposter": {
-    "message": "리포스터"
-  },
-  "mdItem": {
-    "message": "항목"
-  },
-  "mdValue": {
-    "message": "내용"
-  },
-  "mdChainedPosts": {
-    "message": "연결된 게시물"
-  },
-  "errApiKeyMissing": {
-    "message": "API 키가 설정되지 않았습니다."
-  },
-  "errCustomEndpoint": {
-    "message": "커스텀 엔드포인트가 설정되지 않았습니다."
-  },
-  "errUnsupportedProvider": {
-    "message": "지원하지 않는 프로바이더: $1",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "errApiError": {
-    "message": "API 오류 ($1): $2",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      },
-      "2": {
-        "content": "$2"
-      }
-    }
-  },
-  "errInvalidResponse": {
-    "message": "AI 응답 형식이 올바르지 않습니다."
-  },
-  "errAuth": {
-    "message": "인증 실패 ($1): API 키를 확인하세요",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "errForbidden": {
-    "message": "접근 거부 ($1): 권한을 확인하세요",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "errNotFound": {
-    "message": "경로를 찾을 수 없음 ($1): 폴더가 존재하는지 확인하세요",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "errRateLimit": {
-    "message": "요청 한도 초과 ($1): 잠시 후 다시 시도하세요",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "errServer": {
-    "message": "서버 오류 ($1): Obsidian을 확인하세요 ($2)",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      },
-      "2": {
-        "content": "$2"
-      }
-    }
-  },
-  "errGeneric": {
-    "message": "$1 실패: HTTP $2",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      },
-      "2": {
-        "content": "$2"
-      }
-    }
-  },
-  "errConnTimeout": {
-    "message": "연결 시간 초과 (10초)"
-  },
-  "errConnError": {
-    "message": "연결 오류: $1",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  },
-  "errNoteSave": {
-    "message": "노트 저장"
-  },
-  "errImageDownload": {
-    "message": "이미지 다운로드"
-  },
-  "errImageSave": {
-    "message": "이미지 저장"
-  },
-  "errAiDisabled": {
-    "message": "AI 변환이 비활성화되어 있습니다."
-  },
-  "errNoApiKey": {
-    "message": "API 키가 설정되지 않았습니다."
-  },
-  "errAiServiceLoad": {
-    "message": "AI 서비스를 로드할 수 없습니다."
-  },
-  "errAiEmptyResponse": {
-    "message": "AI가 빈 응답을 반환했습니다."
-  },
-  "aiTestPrompt": {
-    "message": "안녕하세요. 연결 테스트입니다. \"연결 성공\"이라고만 응답해주세요."
-  },
-  "aiTestSuccess": {
-    "message": "연결 성공! 응답: $1...",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
-  }
+  "extName": { "message": "Threads to Obsidian" },
+  "extDesc": { "message": "Threads 게시글을 Obsidian에 저장하는 확장 프로그램" },
+
+  "statusChecking": { "message": "연결 확인 중..." },
+  "statusConnected": { "message": "Obsidian 연결됨" },
+  "statusFailed": { "message": "연결 실패" },
+  "statusError": { "message": "연결 오류" },
+
+  "savedPosts": { "message": "저장된 게시글" },
+  "today": { "message": "오늘" },
+  "saveOnLike": { "message": "좋아요 시 저장" },
+  "saveOnSave": { "message": "저장 시 저장" },
+  "settings": { "message": "설정" },
+  "testConnection": { "message": "연결 테스트" },
+  "help": { "message": "도움말" },
+
+  "optionsTitle": { "message": "Threads to Obsidian 설정" },
+  "optionsSubtitle": { "message": "Threads 게시글을 Obsidian에 저장하는 설정을 관리합니다." },
+
+  "triggerSettings": { "message": "트리거 설정" },
+  "triggerDesc": { "message": "어떤 버튼을 클릭했을 때 저장할지 선택합니다." },
+  "triggerLike": { "message": "좋아요 클릭 시 저장" },
+  "triggerLikeHint": { "message": "♡ → ❤️ 변경 시에만 저장됩니다." },
+  "triggerSave": { "message": "저장 클릭 시 저장" },
+  "triggerSaveHint": { "message": "북마크 활성화 시에만 저장됩니다." },
+
+  "restApiSettings": { "message": "Obsidian Local REST API 설정" },
+  "restApiDesc": { "message": "Obsidian의 Local REST API 플러그인 연결 정보를 입력합니다." },
+  "protocol": { "message": "프로토콜" },
+  "host": { "message": "호스트" },
+  "port": { "message": "포트" },
+  "apiKeyOptional": { "message": "API Key (선택)" },
+  "apiKeyPlaceholder": { "message": "API Key를 입력하세요" },
+  "apiKeyHint": { "message": "REST API 플러그인에서 설정한 인증 토큰" },
+  "connecting": { "message": "연결 중..." },
+
+  "aiProviderSettings": { "message": "AI 프로바이더 설정" },
+  "aiProviderDesc": { "message": "게시글 요약 및 변환에 사용할 AI 서비스를 설정합니다." },
+  "aiEnabled": { "message": "AI 변환 사용" },
+  "aiDisabledHint": { "message": "비활성화 시 원본 그대로 저장됩니다." },
+  "defaultProvider": { "message": "기본 AI 프로바이더" },
+  "customProvider": { "message": "직접 설정" },
+  "defaultProviderHint": { "message": "저장 시 사용할 AI 프로바이더를 선택합니다. 아래에서 각 프로바이더별 설정을 미리 해두세요." },
+  "maxOutputTokens": { "message": "최대 출력 토큰" },
+  "maxTokensHint": { "message": "AI 응답의 최대 토큰 수 (기본: 64000)" },
+  "providerApiSetup": { "message": "프로바이더별 API 설정 (펼쳐서 설정)" },
+  "model": { "message": "모델" },
+  "modelName": { "message": "모델 이름" },
+  "customSelf": { "message": "Custom (직접 설정)" },
+  "promptTemplate": { "message": "변환 프롬프트 템플릿" },
+  "promptHint": { "message": "AI가 게시글을 변환할 때 사용하는 프롬프트입니다. {author}, {content} 변수를 사용할 수 있습니다." },
+  "resetTemplate": { "message": "기본 템플릿 복원" },
+  "configured": { "message": "설정됨" },
+  "testing": { "message": "테스트 중..." },
+  "connSuccess": { "message": "연결 성공" },
+  "connFailed": { "message": "연결 실패" },
+  "enterApiKey": { "message": "API Key를 입력하세요" },
+
+  "pathSettings": { "message": "저장 경로 설정" },
+  "pathDesc": { "message": "Obsidian vault 내 저장 위치를 지정합니다." },
+  "vaultName": { "message": "볼트 이름" },
+  "vaultHint": { "message": "Obsidian 볼트 이름 (토스트 클릭으로 파일 열기에 필요)" },
+  "notesFolder": { "message": "노트 저장 폴더" },
+  "notesFolderHint": { "message": "Obsidian vault 최상위 기준 경로" },
+  "yearMonthFolders": { "message": "년도/월 폴더로 구분" },
+  "yearMonthHint": { "message": "활성화 시 Threads/2026/01/ 형식으로 저장" },
+  "imageFolder": { "message": "이미지 저장 폴더" },
+  "imageFolderHint": { "message": "이미지를 저장할 폴더 (노트 폴더와 같은 레벨)" },
+  "imageFolderMode": { "message": "이미지 저장 방식" },
+  "imageModeFixed": { "message": "고정 폴더 사용 (위 설정값)" },
+  "imageModeRelative": { "message": "노트 폴더 연동 (년도/월_img)" },
+  "imageModeHint": { "message": "연동 시 노트와 같은 위치에 _img 폴더 생성" },
+
+  "fileNamingSettings": { "message": "파일명 및 미디어 설정" },
+  "fileNameBasis": { "message": "파일명 기준" },
+  "nameByPostDate": { "message": "게시글 등록일" },
+  "nameBySaveDate": { "message": "저장일" },
+  "nameFormatHint": { "message": "형식: @작성자_YYYYMMDD_HHmm.md" },
+  "downloadImages": { "message": "이미지 로컬 다운로드" },
+  "downloadImagesHint": { "message": "비활성화 시 URL 링크만 저장" },
+  "showNotification": { "message": "저장 완료 알림 표시" },
+
+  "saveBtn": { "message": "설정 저장" },
+  "resetBtn": { "message": "기본값 복원" },
+  "settingsSaved": { "message": "설정이 저장되었습니다." },
+  "settingsReset": { "message": "기본 설정으로 복원되었습니다." },
+  "templateReset": { "message": "기본 템플릿으로 복원되었습니다." },
+  "permissionDenied": { "message": "$1 접근 권한이 거부되었습니다. 해당 엔드포인트가 작동하지 않을 수 있습니다.", "placeholders": { "1": { "content": "$1" } } },
+
+  "toastSaved": { "message": "Obsidian에 저장됨" },
+  "toastSavedImgFail": { "message": "Obsidian에 저장됨 (이미지 $1개 실패)", "placeholders": { "1": { "content": "$1" } } },
+  "toastClickToOpen": { "message": "클릭하여 열기" },
+  "toastSetVault": { "message": "설정에서 볼트 이름을 입력하세요" },
+  "toastAiStart": { "message": "AI 처리 시작..." },
+  "toastExtReload": { "message": "확장 프로그램이 갱신되었습니다. 페이지를 새로고침해주세요." },
+  "toastAiDelay": { "message": "AI 처리가 지연되고 있습니다. Obsidian에서 확인해주세요." },
+  "toastDetailPage": { "message": "상세 페이지에서 저장 버튼을 사용해주세요." },
+
+  "stageTitle": { "message": "제목 생성 중..." },
+  "stageContent": { "message": "본문 변환 중..." },
+  "stageSaving": { "message": "저장 중..." },
+  "stageProcessing": { "message": "처리 중..." },
+
+  "mdPostInfo": { "message": "게시글 정보" },
+  "mdAuthor": { "message": "게시자" },
+  "mdPostUrl": { "message": "게시URL" },
+  "mdViewOnThreads": { "message": "Threads에서 보기" },
+  "mdPostDate": { "message": "게시일" },
+  "mdSavedDate": { "message": "저장일" },
+  "mdTopic": { "message": "주제" },
+  "mdOriginal": { "message": "원문" },
+  "mdMedia": { "message": "미디어" },
+  "mdMyNotes": { "message": "My Notes" },
+  "mdRelatedKnowledge": { "message": "관련 지식" },
+  "mdIdeas": { "message": "아이디어" },
+  "mdMemos": { "message": "메모" },
+  "mdUnknown": { "message": "알 수 없음" },
+  "mdRepostBy": { "message": "리포스트 by $1", "placeholders": { "1": { "content": "$1" } } },
+  "mdQuoteBy": { "message": "$1의 인용", "placeholders": { "1": { "content": "$1" } } },
+  "mdThreadBy": { "message": "$1의 스레드 ($2개 글)", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
+  "mdPostBy": { "message": "$1의 게시글", "placeholders": { "1": { "content": "$1" } } },
+  "mdQuotedOriginal": { "message": "인용된 원본" },
+  "mdMainContent": { "message": "본문" },
+  "mdTag": { "message": "태그" },
+  "mdReposter": { "message": "리포스터" },
+  "mdItem": { "message": "항목" },
+  "mdValue": { "message": "내용" },
+  "mdChainedPosts": { "message": "연결된 게시물" },
+
+  "errApiKeyMissing": { "message": "API 키가 설정되지 않았습니다." },
+  "errCustomEndpoint": { "message": "커스텀 엔드포인트가 설정되지 않았습니다." },
+  "errUnsupportedProvider": { "message": "지원하지 않는 프로바이더: $1", "placeholders": { "1": { "content": "$1" } } },
+  "errApiError": { "message": "API 오류 ($1): $2", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
+  "errInvalidResponse": { "message": "AI 응답 형식이 올바르지 않습니다." },
+  "errAuth": { "message": "인증 실패 ($1): API 키를 확인하세요", "placeholders": { "1": { "content": "$1" } } },
+  "errForbidden": { "message": "접근 거부 ($1): 권한을 확인하세요", "placeholders": { "1": { "content": "$1" } } },
+  "errNotFound": { "message": "경로를 찾을 수 없음 ($1): 폴더가 존재하는지 확인하세요", "placeholders": { "1": { "content": "$1" } } },
+  "errRateLimit": { "message": "요청 한도 초과 ($1): 잠시 후 다시 시도하세요", "placeholders": { "1": { "content": "$1" } } },
+  "errServer": { "message": "서버 오류 ($1): Obsidian을 확인하세요 ($2)", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
+  "errGeneric": { "message": "$1 실패: HTTP $2", "placeholders": { "1": { "content": "$1" }, "2": { "content": "$2" } } },
+  "errConnTimeout": { "message": "연결 시간 초과 (10초)" },
+  "errConnError": { "message": "연결 오류: $1", "placeholders": { "1": { "content": "$1" } } },
+  "errNoteSave": { "message": "노트 저장" },
+  "errImageDownload": { "message": "이미지 다운로드" },
+  "errImageSave": { "message": "이미지 저장" },
+  "errAiDisabled": { "message": "AI 변환이 비활성화되어 있습니다." },
+  "errNoApiKey": { "message": "API 키가 설정되지 않았습니다." },
+  "errAiServiceLoad": { "message": "AI 서비스를 로드할 수 없습니다." },
+  "errAiEmptyResponse": { "message": "AI가 빈 응답을 반환했습니다." },
+
+  "aiTestPrompt": { "message": "안녕하세요. 연결 테스트입니다. \"연결 성공\"이라고만 응답해주세요." },
+  "aiTestSuccess": { "message": "연결 성공! 응답: $1...", "placeholders": { "1": { "content": "$1" } } }
 }

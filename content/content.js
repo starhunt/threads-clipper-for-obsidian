@@ -1,4 +1,4 @@
-// Threads Clipper for Obsidian - Content Script
+// Threads to Obsidian - Content Script
 // Detects like/save button clicks and extracts post data from Threads
 
 (function () {
@@ -8,6 +8,9 @@
     const processedPosts = new Set();
     const MAX_PROCESSED_POSTS = 500;
     let settings = null;
+
+    // AI progress tracking (per-post)
+    const aiProgressTimers = new Map();
 
     // MutationObserver 참조 (cleanup용)
     let domObserver = null;
@@ -33,26 +36,105 @@
         try {
             settings = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
         } catch (error) {
-            console.error('Threads Clipper for Obsidian: Failed to get settings', error);
+            console.error('Threads to Obsidian: Failed to get settings', error);
             // Use default settings if message fails
             settings = {
                 triggerOnLike: true,
                 triggerOnSave: true,
                 downloadImages: false,
-                vaultName: '',
-                uriVaultMode: 'lastActive',
-                notesFolder: 'Threads Clipper',
-                useYearMonthFolders: true,
-                imageFolder: 'Threads Clipper_media',
-                imageFolderMode: 'relative',
-                fileNameType: 'postDate',
-                downloadImages: false,
+                notesFolder: 'Threads',
+                imageFolder: 'Threads_img',
+                fileNameType: 'postDate'
             };
         }
 
         observeDOM();
         setupSaveButtonDelegation();
+        setupProgressListener();
     }
+
+    // Listen for AI progress updates from service worker
+    function setupProgressListener() {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            if (message.type === 'AI_PROGRESS') {
+                updateProgressToast(message);
+            }
+        });
+    }
+
+    // Update progress toast with current stage and timer
+    function updateProgressToast(progress) {
+        const { stage, detail, model, provider, postId } = progress;
+        if (!postId) return;
+
+        // Start per-post timer if not already running
+        if (!aiProgressTimers.has(postId)) {
+            const startTime = Date.now();
+            const timerId = setInterval(() => {
+                updateToastTimer(postId);
+            }, 1000);
+            aiProgressTimers.set(postId, { startTime, timerId });
+        }
+
+        const timerInfo = aiProgressTimers.get(postId);
+        const elapsed = Math.floor((Date.now() - timerInfo.startTime) / 1000);
+        const stageText = getStageText(stage);
+
+        // Update existing toast for this postId
+        const toast = document.querySelector(`.threads-obsidian-toast[data-post-id="${postId}"]`);
+        if (toast && toast.dataset.processing === 'true') {
+            const titleEl = toast.querySelector('.toast-title');
+            const subtitleEl = toast.querySelector('.toast-subtitle');
+            if (titleEl) titleEl.textContent = stageText;
+            if (subtitleEl) subtitleEl.textContent = `${provider}/${model} • ${elapsed}초`;
+        }
+    }
+
+    // Update timer display in toast for a specific post
+    function updateToastTimer(postId) {
+        const timerInfo = aiProgressTimers.get(postId);
+        if (!timerInfo) return;
+
+        const toast = document.querySelector(`.threads-obsidian-toast[data-post-id="${postId}"]`);
+        if (toast && toast.dataset.processing === 'true') {
+            const subtitleEl = toast.querySelector('.toast-subtitle');
+            if (subtitleEl) {
+                const elapsed = Math.floor((Date.now() - timerInfo.startTime) / 1000);
+                const currentText = subtitleEl.textContent;
+                const parts = currentText.split(' • ');
+                if (parts.length >= 1) {
+                    subtitleEl.textContent = `${parts[0]} • ${elapsed}초`;
+                }
+            }
+        }
+    }
+
+    // Get readable stage text
+    function getStageText(stage) {
+        switch (stage) {
+            case 'title': return '📝 제목 생성 중...';
+            case 'content': return '📄 본문 변환 중...';
+            case 'saving': return '💾 저장 중...';
+            default: return '⏳ 처리 중...';
+        }
+    }
+
+    // Stop progress timer for a specific post
+    function stopProgressTimer(postId) {
+        if (postId) {
+            const timerInfo = aiProgressTimers.get(postId);
+            if (timerInfo) {
+                clearInterval(timerInfo.timerId);
+                aiProgressTimers.delete(postId);
+            }
+        } else {
+            // Stop all timers
+            aiProgressTimers.forEach(info => clearInterval(info.timerId));
+            aiProgressTimers.clear();
+        }
+    }
+
+    // Observe DOM for dynamically loaded content
     function observeDOM() {
         domObserver = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
@@ -76,13 +158,14 @@
                 domObserver.disconnect();
                 domObserver = null;
             }
+            stopProgressTimer();
         });
     }
 
     // Attach click listeners to like/save buttons
     function attachButtonListeners() {
         if (!settings) {
-            console.warn('Threads Clipper for Obsidian: Settings not loaded yet');
+            console.warn('Threads to Obsidian: Settings not loaded yet');
             return;
         }
 
@@ -248,88 +331,232 @@
     // Process and save the post
     async function processPost(postElement, trigger) {
 
-        let postId = null;
-
         try {
             const postData = extractPostData(postElement);
             if (!postData) {
-                console.error('Threads Clipper for Obsidian: Failed to extract post data');
+                console.error('Threads to Obsidian: Failed to extract post data');
                 return;
             }
 
-            postId = `${postData.author.username}_${postData.timestamp || Date.now()}`;
+            // Create unique ID for deduplication
+            const postId = `${postData.author.username}_${postData.timestamp || Date.now()}`;
             if (processedPosts.has(postId)) {
                 return;
             }
             addProcessedPost(postId);
 
+            // Convert to markdown
             const markdown = convertToMarkdown(postData);
             const filename = generateFilename(postData);
-            const postDateForPath = postData.timestamp ? new Date(postData.timestamp) : new Date();
-            let folderPath = settings.notesFolder;
-            if (settings.useYearMonthFolders) {
-                const y = postDateForPath.getFullYear();
-                const m = String(postDateForPath.getMonth() + 1).padStart(2, '0');
-                folderPath = `${settings.notesFolder}/${y}/${m}`;
-            }
-            const filePath = `${folderPath}/${filename}`;
 
+            // Prepare images for download
+            const images = postData.content.media
+                .filter(m => m.type === 'image')
+                .map((m, i) => ({
+                    url: m.url,
+                    filename: `${filename.replace('.md', '')}_${i + 1}.jpg`
+                }));
+
+            // Also add chained post images
+            if (postData.type === 'thread' && postData.chainedPosts.length > 0) {
+                postData.chainedPosts.forEach((post, pIdx) => {
+                    if (post.media) {
+                        post.media.filter(m => m.type === 'image').forEach((m, mIdx) => {
+                            images.push({
+                                url: m.url,
+                                filename: `${filename.replace('.md', '')}_p${pIdx + 2}_${mIdx + 1}.jpg`
+                            });
+                        });
+                    }
+                });
+            }
+
+            // Check if extension context is still valid
             if (!chrome.runtime?.id) {
-                console.error('Threads Clipper for Obsidian: Extension context invalidated, please reload the page');
+                console.error('Threads to Obsidian: Extension context invalidated, please reload the page');
                 showToast('⚠️ 확장 프로그램이 갱신되었습니다. 페이지를 새로고침해주세요.');
                 return;
             }
 
-            let clipboardOk = false;
-            try {
-                await navigator.clipboard.writeText(markdown);
-                clipboardOk = true;
-            } catch (clipErr) {
-                console.warn('[Threads Clipper for Obsidian] Clipboard API failed, using fallback:', clipErr);
-                const ta = document.createElement('textarea');
-                ta.value = markdown;
-                ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
-                document.body.appendChild(ta);
-                ta.select();
-                clipboardOk = document.execCommand('copy');
-                ta.remove();
+            // URI 모드 vs REST 모드 분기
+            const isUriMode = settings.saveMethod === 'uri';
+            let result;
+
+            if (isUriMode) {
+                // === URI 모드: AI 변환 후 clipboard → obsidian:// URI ===
+                if (settings.aiEnabled) {
+                    // AI 진행 타이머 시작
+                    const startTime = Date.now();
+                    const timerId = setInterval(() => {
+                        updateToastTimer(postId);
+                    }, 1000);
+                    aiProgressTimers.set(postId, { startTime, timerId });
+
+                    showToast('', {
+                        isProcessing: true,
+                        stage: '⏳ AI 처리 시작...',
+                        model: `${settings.aiProvider}/${settings.aiModel}`,
+                        elapsed: 0,
+                        postId,
+                        authorId: postData.author.username
+                    });
+
+                    result = await chrome.runtime.sendMessage({
+                        type: 'TRANSFORM_WITH_AI',
+                        data: { postData, originalMarkdown: markdown, postId }
+                    });
+
+                    stopProgressTimer(postId);
+                } else {
+                    // AI 없이 원본 마크다운 사용
+                    const postDateForPath = postData.timestamp ? new Date(postData.timestamp) : new Date();
+                    let folderPath = settings.notesFolder;
+                    if (settings.useYearMonthFolders) {
+                        const y = postDateForPath.getFullYear();
+                        const m = String(postDateForPath.getMonth() + 1).padStart(2, '0');
+                        folderPath = `${settings.notesFolder}/${y}/${m}`;
+                    }
+                    result = {
+                        success: true,
+                        content: markdown,
+                        filename,
+                        filePath: `${folderPath}/${filename}`,
+                        vaultName: settings.vaultName,
+                        aiUsed: false
+                    };
+                }
+
+                if (result && result.success) {
+                    // 클립보드에 콘텐츠 복사 (유저 제스처 만료 대비 fallback 포함)
+                    let clipboardOk = false;
+                    try {
+                        await navigator.clipboard.writeText(result.content);
+                        clipboardOk = true;
+                    } catch (clipErr) {
+                        console.warn('[Threads to Obsidian] Clipboard API failed, using fallback:', clipErr);
+                        // execCommand fallback (유저 제스처 만료 시)
+                        const ta = document.createElement('textarea');
+                        ta.value = result.content;
+                        ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        clipboardOk = document.execCommand('copy');
+                        ta.remove();
+                    }
+
+                    if (!clipboardOk) {
+                        showToast('❌ 클립보드 복사 실패. 브라우저 권한을 확인해주세요.');
+                        return;
+                    }
+
+                    // obsidian://new URI 생성 (.md 확장자 제거)
+                    const filePathNoExt = result.filePath.replace(/\.md$/, '');
+                    const params = new URLSearchParams();
+                    // 지정 볼트 모드일 때만 vault 파라미터 추가 (lastActive면 생략 → 마지막 활성 볼트)
+                    if (settings.uriVaultMode !== 'lastActive' && result.vaultName) {
+                        params.set('vault', result.vaultName);
+                    }
+                    params.set('file', filePathNoExt);
+                    params.set('clipboard', 'true');
+                    params.set('overwrite', 'true');
+
+                    const obsidianUri = `obsidian://new?${params.toString()}`;
+                    console.log('[Threads to Obsidian] Opening URI:', obsidianUri);
+                    // _blank 사용: _self는 현재 페이지를 떠나 content script가 죽음
+                    window.open(obsidianUri, '_blank');
+
+                    const aiInfo = result.aiUsed ? ' (AI 변환)' : (result.failureReason ? ' (원본 저장)' : '');
+                    showToast('✅ Saved to Obsidian via URI' + aiInfo, {
+                        isSuccess: true,
+                        filePath: result.filePath,
+                        vaultName: result.vaultName,
+                        imageErrors: [],
+                        postId,
+                        authorId: postData.author.username
+                    });
+                } else {
+                    showToast('❌ Failed: ' + (result?.error || 'Unknown error'));
+                }
+            } else {
+                // === REST 모드: 기존 로직 유지 ===
+                if (settings.aiEnabled) {
+                    // Start per-post progress timer
+                    const startTime = Date.now();
+                    const timerId = setInterval(() => {
+                        updateToastTimer(postId);
+                    }, 1000);
+                    aiProgressTimers.set(postId, { startTime, timerId });
+
+                    showToast('', {
+                        isProcessing: true,
+                        stage: '⏳ AI 처리 시작...',
+                        model: `${settings.aiProvider}/${settings.aiModel}`,
+                        elapsed: 0,
+                        postId,
+                        authorId: postData.author.username
+                    });
+
+                    result = await chrome.runtime.sendMessage({
+                        type: 'SAVE_WITH_AI',
+                        data: {
+                            postData,
+                            images: settings.downloadImages ? images : [],
+                            originalMarkdown: markdown,
+                            postId
+                        }
+                    });
+
+                    stopProgressTimer(postId);
+
+                    if (result) {
+                        if (result.aiUsed) {
+                            console.log('[Threads to Obsidian] AI transformation successful');
+                        } else if (result.failureReason) {
+                            console.warn('[Threads to Obsidian] AI not used:', result.failureReason);
+                        }
+                    }
+                } else {
+                    result = await chrome.runtime.sendMessage({
+                        type: 'SAVE_TO_OBSIDIAN',
+                        data: {
+                            filename,
+                            content: markdown,
+                            images: settings.downloadImages ? images : []
+                        }
+                    });
+                }
+
+                if (result && result.success) {
+                    const aiInfo = result.aiUsed ? ' (AI 변환)' : (result.failureReason ? ' (원본 저장)' : '');
+                    showToast('✅ Saved to Obsidian' + aiInfo, {
+                        isSuccess: true,
+                        filePath: result.path,
+                        vaultName: result.vaultName,
+                        imageErrors: result.imageErrors || [],
+                        postId,
+                        authorId: postData.author.username
+                    });
+
+                    if (settings.aiEnabled && !result.aiUsed && result.failureReason) {
+                        console.warn('[Threads to Obsidian] 원본으로 저장됨. 이유:', result.failureReason);
+                    }
+                } else {
+                    showToast('❌ Failed to save: ' + (result?.error || 'Unknown error'));
+                }
             }
-
-            if (!clipboardOk) {
-                showToast('❌ 클립보드 복사 실패. 브라우저 권한을 확인해주세요.');
-                return;
-            }
-
-            const filePathNoExt = filePath.replace(/\.md$/, '');
-            const params = new URLSearchParams();
-            if (settings.uriVaultMode !== 'lastActive' && settings.vaultName) {
-                params.set('vault', settings.vaultName);
-            }
-            params.set('file', filePathNoExt);
-            params.set('clipboard', 'true');
-            params.set('overwrite', 'true');
-
-            const obsidianUri = `obsidian://new?${params.toString()}`;
-            window.open(obsidianUri, '_blank');
-
-            await chrome.runtime.sendMessage({
-                type: 'RECORD_URI_SAVE',
-                data: { filename }
-            });
-
-            showToast('✅ Prepared in Obsidian', {
-                isSuccess: true,
-                filePath,
-                vaultName: settings.vaultName,
-                imageErrors: [],
-                postId,
-                authorId: postData.author.username
-            });
         } catch (error) {
-            console.error('Threads Clipper for Obsidian: Error in processPost:', error);
+            // Stop timer on error
+            stopProgressTimer(postId);
+
+            console.error('Threads to Obsidian: Error in processPost:', error);
+
+            // Specific handling for extension context invalidated
             if (error.message.includes('Extension context invalidated') ||
                 error.message.includes('Receiving end does not exist')) {
                 showToast('⚠️ 확장 프로그램이 갱신되었습니다. 페이지를 새로고침하세요.');
+            } else if (error.message.includes('message channel closed')) {
+                // AI processing timeout - may have still succeeded
+                showToast('⏳ AI 처리가 지연되고 있습니다. Obsidian에서 확인해주세요.');
             } else {
                 showToast('❌ Error: ' + error.message);
             }
@@ -378,11 +605,9 @@
                 data.reposter = extractReposter(postElement);
             }
 
-            data.comments = [];
-
             return data;
         } catch (error) {
-            console.error('Threads Clipper for Obsidian: Error extracting post data', error);
+            console.error('Threads to Obsidian: Error extracting post data', error);
             return null;
         }
     }
@@ -879,69 +1104,6 @@
         return null;
     }
 
-    // Extract comments from post detail page (best-effort on feed)
-    // 같은 작성자 + 스레드 인디케이터 글은 본문 스레드이므로 제외하고,
-    // 그 외의 모든 게시 노드를 댓글 후보로 수집한다.
-    function extractComments(element, authorUsername, chainedPosts) {
-        const comments = [];
-        const isDetailPage = window.location.pathname.includes('/post/');
-        if (!isDetailPage) {
-            // 피드 뷰: 댓글 DOM이 거의 없음. 빈 배열 반환 (옵션 안내는 토스트로 별도)
-            return comments;
-        }
-
-        const maxCount = Math.max(1, Math.min(100, parseInt(settings.commentMaxCount, 10) || 20));
-        const minLength = Math.max(0, parseInt(settings.commentMinLength, 10) || 0);
-        const scope = settings.commentScope || 'all';
-
-        // 본문 스레드에서 이미 수집한 텍스트는 댓글에서 제외 (중복 방지)
-        const chainedTexts = new Set((chainedPosts || []).map(p => (p.text || '').trim()).filter(Boolean));
-
-        const allPosts = Array.from(document.querySelectorAll('div[data-pressable-container="true"]'));
-        let foundCurrentPost = false;
-
-        for (const post of allPosts) {
-            if (post === element) {
-                foundCurrentPost = true;
-                continue;
-            }
-            if (!foundCurrentPost) continue;
-            if (comments.length >= maxCount) break;
-
-            const postAuthorLink = post.querySelector('a[href^="/@"]');
-            if (!postAuthorLink) continue;
-
-            const postAuthor = '@' + postAuthorLink.getAttribute('href').replace('/@', '').split('/')[0];
-            const postText = post.innerText || '';
-            const hasThreadIndicator = /\d+\s*\/\s*\d+/.test(postText);
-
-            // 본문 스레드(작성자 + p/n 인디케이터)는 댓글이 아님 → 스킵
-            if (postAuthor === authorUsername && hasThreadIndicator) continue;
-
-            // 작성자 답글만 모드: 다른 사용자 댓글 제외
-            if (scope === 'authorOnly' && postAuthor !== authorUsername) continue;
-
-            const text = extractText(post);
-            if (!text || text.length < Math.max(2, minLength)) continue;
-
-            // 본문 스레드와 동일 텍스트는 중복으로 간주
-            if (chainedTexts.has(text.trim())) continue;
-
-            const commentAuthor = extractAuthor(post);
-            const url = extractPostUrl(post);
-            const timestamp = extractTimestamp(post);
-
-            comments.push({
-                author: commentAuthor,
-                text,
-                timestamp,
-                url
-            });
-        }
-
-        return comments;
-    }
-
     // Convert post data to markdown
     function convertToMarkdown(postData) {
         const now = new Date();
@@ -978,10 +1140,6 @@
 
         if (postData.type === 'thread' && postData.chainedPosts.length > 0) {
             md += `thread_count: ${postData.chainedPosts.length + 1}\n`;
-        }
-
-        if (postData.comments && postData.comments.length > 0) {
-            md += `comment_count: ${postData.comments.length}\n`;
         }
 
         if (postData.type === 'repost' && postData.reposter) {
@@ -1043,7 +1201,7 @@
             postData.content.media.forEach((media) => {
                 if (media.type === 'image') {
                     imageIndex++;
-                    if (false && settings.downloadImages) {
+                    if (settings.downloadImages) {
                         const postDateForPath = postData.timestamp ? new Date(postData.timestamp) : new Date();
                         const imageFolderPath = getImageFolderPath(postDateForPath);
                         const localPath = `${imageFolderPath}/${generateFilename(postData).replace('.md', '')}_${imageIndex}.jpg`;
@@ -1069,7 +1227,7 @@
                     post.media.forEach((media) => {
                         if (media.type === 'image') {
                             chainImageIndex++;
-                            if (false && settings.downloadImages) {
+                            if (settings.downloadImages) {
                                 // Generate filename for chained post images
                                 const postDateForPath = postData.timestamp ? new Date(postData.timestamp) : new Date();
                                 const imageFolderPath = getImageFolderPath(postDateForPath);
@@ -1090,24 +1248,6 @@
             if (postData.quotedPost.content.text) {
                 md += `> ${postData.quotedPost.content.text.replace(/\n/g, '\n> ')}\n\n`;
             }
-        }
-
-        // Comments
-        if (postData.comments && postData.comments.length > 0) {
-            md += `## 💬 댓글 (${postData.comments.length}개)\n\n`;
-            postData.comments.forEach((c) => {
-                const handle = c.author?.username || '@unknown';
-                const name = c.author?.displayName ? ` (${c.author.displayName})` : '';
-                const ts = c.timestamp ? formatSeoulDate(new Date(c.timestamp)) : '';
-                md += `### ${handle}${name}${ts ? ' — ' + ts : ''}\n`;
-                if (c.text) {
-                    md += `> ${c.text.replace(/\n/g, '\n> ')}\n`;
-                }
-                if (c.url) {
-                    md += `\n[원문](${c.url})\n`;
-                }
-                md += '\n';
-            });
         }
 
         return md;
@@ -1191,7 +1331,7 @@
         if (isProcessing) {
             // Processing toast with spinner - stays visible until replaced
             const { stage, model, elapsed } = options;
-            const stageText = stage || '저장 중...';
+            const stageText = stage || 'AI 변환 중...';
             const modelText = model || '';
             const elapsedText = elapsed !== undefined ? `${elapsed}초` : '';
             const subtitleParts = [modelText, elapsedText].filter(Boolean).join(' • ') || '잠시 기다려주세요';

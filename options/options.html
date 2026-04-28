@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Threads Clipper for Obsidian - 설정</title>
+  <title>Threads to Obsidian - 설정</title>
   <link rel="stylesheet" href="options.css">
 </head>
+
 <body>
   <div class="container">
     <header>
-      <h1>📌 Threads Clipper for Obsidian</h1>
-      <p class="subtitle">좋아요 또는 저장한 Threads 게시글을 Obsidian URI로 바로 보냅니다.</p>
+      <h1>⚙️ Threads to Obsidian 설정</h1>
+      <p class="subtitle">Threads 게시글을 Obsidian에 저장하는 설정을 관리합니다.</p>
     </header>
 
     <main>
+      <!-- Trigger Settings -->
       <section class="settings-section">
-        <h2>🎯 저장 트리거</h2>
-        <p class="section-desc">어떤 액션이 저장을 시작할지 선택합니다.</p>
+        <h2>🎯 트리거 설정</h2>
+        <p class="section-desc">어떤 버튼을 클릭했을 때 저장할지 선택합니다.</p>
 
         <div class="setting-item">
           <label class="toggle-label">
@@ -24,7 +27,7 @@
             <span class="toggle-slider"></span>
             <span class="label-text">좋아요 클릭 시 저장</span>
           </label>
-          <p class="setting-hint">♡ → ❤️ 상태로 바뀔 때만 저장합니다.</p>
+          <p class="setting-hint">♡ → ❤️ 변경 시에만 저장됩니다.</p>
         </div>
 
         <div class="setting-item">
@@ -33,89 +36,338 @@
             <span class="toggle-slider"></span>
             <span class="label-text">저장 클릭 시 저장</span>
           </label>
-          <p class="setting-hint">북마크 활성화 시에만 저장합니다.</p>
+          <p class="setting-hint">북마크 활성화 시에만 저장됩니다.</p>
         </div>
       </section>
 
+      <!-- Save Method Settings -->
       <section class="settings-section">
-        <h2>🚀 Obsidian URI 모드</h2>
-        <p class="section-desc">플러그인 없이 `obsidian://new` URI로 노트를 생성합니다.</p>
+        <h2>🔗 Obsidian 연결 설정</h2>
+        <p class="section-desc">Obsidian에 노트를 저장하는 방식을 선택합니다.</p>
 
-        <div class="setting-item info-box">
-          <p>추가 플러그인 설치 없이 사용할 수 있습니다.</p>
-          <ul style="margin: 8px 0 0 16px; font-size: 13px; opacity: 0.8;">
-            <li>노트 내용은 클립보드를 통해 Obsidian으로 전달됩니다.</li>
-            <li>지정된 볼트 또는 마지막 활성 볼트에 저장할 수 있습니다.</li>
-            <li>URI 모드에서는 미디어를 로컬 파일로 다운로드하지 않고 링크로 남깁니다.</li>
-          </ul>
+        <div class="setting-item">
+          <label for="saveMethod">저장 방식</label>
+          <select id="saveMethod">
+            <option value="rest">REST API (Local REST API 플러그인)</option>
+            <option value="uri">Obsidian URI (플러그인 불필요)</option>
+          </select>
+          <p class="setting-hint" id="saveMethodHint">REST API: 이미지 로컬 저장 가능, Local REST API 플러그인 필요</p>
         </div>
+
+        <!-- REST API Settings (shown when saveMethod=rest) -->
+        <div id="restApiSettings">
+          <div class="setting-item">
+            <label for="protocol">프로토콜</label>
+            <select id="protocol">
+              <option value="http">HTTP</option>
+              <option value="https">HTTPS</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <label for="host">호스트</label>
+            <input type="text" id="host" placeholder="localhost" value="localhost">
+          </div>
+
+          <div class="setting-item">
+            <label for="port">포트</label>
+            <input type="text" id="port" placeholder="27123" value="27123">
+          </div>
+
+          <div class="setting-item">
+            <label for="apiKey">API Key (선택)</label>
+            <input type="password" id="apiKey" placeholder="API Key를 입력하세요">
+            <p class="setting-hint">REST API 플러그인에서 설정한 인증 토큰</p>
+          </div>
+
+          <button id="testConnection" class="btn btn-secondary">🔍 연결 테스트</button>
+          <div id="connectionStatus" class="connection-status"></div>
+        </div>
+
+        <!-- URI Settings info (shown when saveMethod=uri) -->
+        <div id="uriSettings" style="display: none;">
+          <div class="setting-item info-box">
+            <p>📋 클립보드를 통해 <code>obsidian://new</code> URI로 노트를 생성합니다.</p>
+            <ul style="margin: 8px 0 0 16px; font-size: 13px; opacity: 0.8;">
+              <li>추가 플러그인 설치가 필요 없습니다</li>
+              <li>마지막 활성화된 Obsidian 볼트에 저장됩니다</li>
+              <li>⚠️ 이미지 로컬 다운로드는 지원되지 않습니다 (외부 URL 참조)</li>
+              <li>⚠️ 저장 시 클립보드 내용이 일시적으로 대체됩니다</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Provider Settings -->
+      <section class="settings-section">
+        <h2>🤖 AI 프로바이더 설정</h2>
+        <p class="section-desc">게시글 요약 및 변환에 사용할 AI 서비스를 설정합니다.</p>
+
+        <div class="setting-item">
+          <label class="toggle-label">
+            <input type="checkbox" id="aiEnabled">
+            <span class="toggle-slider"></span>
+            <span class="label-text">AI 변환 사용</span>
+          </label>
+          <p class="setting-hint">비활성화 시 원본 그대로 저장됩니다.</p>
+        </div>
+
+        <div class="setting-item">
+          <label for="aiActiveProvider">🎯 기본 AI 프로바이더</label>
+          <select id="aiActiveProvider">
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="grok">Grok (X.AI)</option>
+            <option value="zai">zai (GLM)</option>
+            <option value="custom">직접 설정</option>
+          </select>
+          <p class="setting-hint">저장 시 사용할 AI 프로바이더를 선택합니다. 아래에서 각 프로바이더별 설정을 미리 해두세요.</p>
+        </div>
+
+        <div class="setting-item">
+          <label for="aiMaxTokens">최대 출력 토큰</label>
+          <input type="number" id="aiMaxTokens" min="1000" max="200000" step="1000" value="64000">
+          <p class="setting-hint">AI 응답의 최대 토큰 수 (기본: 64000)</p>
+        </div>
+
+        <!-- Provider Cards Container -->
+        <div id="providerCardsContainer" style="margin-top: 20px;">
+          <h3 style="margin-bottom: 12px; font-size: 14px; color: #666;">📋 프로바이더별 API 설정 (펼쳐서 설정)</h3>
+
+          <!-- OpenAI -->
+          <div class="provider-card" data-provider="openai">
+            <div class="provider-header">
+              <span class="provider-icon">🔵</span>
+              <span class="provider-name">OpenAI (GPT)</span>
+              <span class="provider-status" id="status-openai"></span>
+              <button class="provider-toggle-btn" data-provider="openai">▼</button>
+            </div>
+            <div class="provider-body" id="body-openai" style="display: none;">
+              <div class="provider-field">
+                <label>API Key</label>
+                <input type="password" id="apiKey-openai" placeholder="sk-...">
+              </div>
+              <div class="provider-field">
+                <label>모델</label>
+                <input type="text" id="model-openai" placeholder="gpt-4o">
+              </div>
+              <div class="provider-actions">
+                <button class="btn btn-sm test-provider-btn" data-provider="openai">🔍 연결 테스트</button>
+                <span class="test-result" id="result-openai"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gemini -->
+          <div class="provider-card" data-provider="gemini">
+            <div class="provider-header">
+              <span class="provider-icon">🟢</span>
+              <span class="provider-name">Google Gemini</span>
+              <span class="provider-status" id="status-gemini"></span>
+              <button class="provider-toggle-btn" data-provider="gemini">▼</button>
+            </div>
+            <div class="provider-body" id="body-gemini" style="display: none;">
+              <div class="provider-field">
+                <label>API Key</label>
+                <input type="password" id="apiKey-gemini" placeholder="AI...">
+              </div>
+              <div class="provider-field">
+                <label>모델</label>
+                <input type="text" id="model-gemini" placeholder="gemini-2.0-flash">
+              </div>
+              <div class="provider-actions">
+                <button class="btn btn-sm test-provider-btn" data-provider="gemini">🔍 연결 테스트</button>
+                <span class="test-result" id="result-gemini"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anthropic -->
+          <div class="provider-card" data-provider="anthropic">
+            <div class="provider-header">
+              <span class="provider-icon">🟤</span>
+              <span class="provider-name">Anthropic (Claude)</span>
+              <span class="provider-status" id="status-anthropic"></span>
+              <button class="provider-toggle-btn" data-provider="anthropic">▼</button>
+            </div>
+            <div class="provider-body" id="body-anthropic" style="display: none;">
+              <div class="provider-field">
+                <label>API Key</label>
+                <input type="password" id="apiKey-anthropic" placeholder="sk-ant-...">
+              </div>
+              <div class="provider-field">
+                <label>모델</label>
+                <input type="text" id="model-anthropic" placeholder="claude-3-5-sonnet-latest">
+              </div>
+              <div class="provider-actions">
+                <button class="btn btn-sm test-provider-btn" data-provider="anthropic">🔍 연결 테스트</button>
+                <span class="test-result" id="result-anthropic"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grok -->
+          <div class="provider-card" data-provider="grok">
+            <div class="provider-header">
+              <span class="provider-icon">⚫</span>
+              <span class="provider-name">Grok (X.AI)</span>
+              <span class="provider-status" id="status-grok"></span>
+              <button class="provider-toggle-btn" data-provider="grok">▼</button>
+            </div>
+            <div class="provider-body" id="body-grok" style="display: none;">
+              <div class="provider-field">
+                <label>API Key</label>
+                <input type="password" id="apiKey-grok" placeholder="xai-...">
+              </div>
+              <div class="provider-field">
+                <label>모델</label>
+                <input type="text" id="model-grok" placeholder="grok-3">
+              </div>
+              <div class="provider-actions">
+                <button class="btn btn-sm test-provider-btn" data-provider="grok">🔍 연결 테스트</button>
+                <span class="test-result" id="result-grok"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- zai -->
+          <div class="provider-card" data-provider="zai">
+            <div class="provider-header">
+              <span class="provider-icon">🟡</span>
+              <span class="provider-name">zai (GLM)</span>
+              <span class="provider-status" id="status-zai"></span>
+              <button class="provider-toggle-btn" data-provider="zai">▼</button>
+            </div>
+            <div class="provider-body" id="body-zai" style="display: none;">
+              <div class="provider-field">
+                <label>API Key</label>
+                <input type="password" id="apiKey-zai" placeholder="API Key">
+              </div>
+              <div class="provider-field">
+                <label>Endpoint</label>
+                <input type="text" id="endpoint-zai" placeholder="https://api.z.ai/api/coding/paas/v4/chat/completions">
+              </div>
+              <div class="provider-field">
+                <label>모델</label>
+                <input type="text" id="model-zai" placeholder="GLM-4.5">
+              </div>
+              <div class="provider-actions">
+                <button class="btn btn-sm test-provider-btn" data-provider="zai">🔍 연결 테스트</button>
+                <span class="test-result" id="result-zai"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom -->
+          <div class="provider-card" data-provider="custom">
+            <div class="provider-header">
+              <span class="provider-icon">⚙️</span>
+              <span class="provider-name">Custom (직접 설정)</span>
+              <span class="provider-status" id="status-custom"></span>
+              <button class="provider-toggle-btn" data-provider="custom">▼</button>
+            </div>
+            <div class="provider-body" id="body-custom" style="display: none;">
+              <div class="provider-field">
+                <label>API Key</label>
+                <input type="password" id="apiKey-custom" placeholder="API Key">
+              </div>
+              <div class="provider-field">
+                <label>Endpoint</label>
+                <input type="text" id="endpoint-custom" placeholder="https://api.example.com/v1/chat/completions">
+              </div>
+              <div class="provider-field">
+                <label>모델 이름</label>
+                <input type="text" id="model-custom" placeholder="gpt-4o">
+              </div>
+              <div class="provider-actions">
+                <button class="btn btn-sm test-provider-btn" data-provider="custom">🔍 연결 테스트</button>
+                <span class="test-result" id="result-custom"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item" style="margin-top: 20px;">
+          <label for="aiPromptTemplate">변환 프롬프트 템플릿</label>
+          <textarea id="aiPromptTemplate" rows="15"
+            style="width: 100%; font-family: monospace; font-size: 12px;"></textarea>
+          <p class="setting-hint">AI가 게시글을 변환할 때 사용하는 프롬프트입니다. {author}, {content} 변수를 사용할 수 있습니다.</p>
+          <button id="resetPromptTemplate" class="btn btn-secondary" style="margin-top: 8px;">🔄 기본 템플릿 복원</button>
+        </div>
+      </section>
+
+      <!-- Path Settings -->
+      <section class="settings-section">
+        <h2>📁 저장 경로 설정</h2>
+        <p class="section-desc">Obsidian vault 내 저장 위치를 지정합니다.</p>
 
         <div class="setting-item">
           <label for="vaultName">볼트 이름</label>
           <input type="text" id="vaultName" placeholder="My Vault">
-          <p class="setting-hint">지정된 볼트에 저장하거나 저장 완료 토스트에서 다시 열 때 사용합니다.</p>
+          <p class="setting-hint" id="vaultNameHint">Obsidian 볼트 이름 (토스트 클릭으로 파일 열기에 필요)</p>
         </div>
 
-        <div class="setting-item">
-          <label for="uriVaultMode">저장 대상 볼트</label>
+        <div class="setting-item" id="uriVaultModeContainer" style="display: none;">
+          <label for="uriVaultMode">URI 저장 대상 볼트</label>
           <select id="uriVaultMode">
-            <option value="specified">지정된 볼트에 저장</option>
-            <option value="lastActive" selected>마지막 활성 볼트에 저장</option>
+            <option value="specified">지정된 볼트에 저장 (위 볼트 이름 사용)</option>
+            <option value="lastActive">마지막 활성 볼트에 저장</option>
           </select>
+          <p class="setting-hint">마지막 활성 볼트: Obsidian에서 가장 최근 열었던 볼트에 자동 저장</p>
         </div>
-      </section>
-
-      <section class="settings-section">
-        <h2>📁 저장 경로</h2>
-        <p class="section-desc">Obsidian 볼트 안에서 노트와 미디어 경로 규칙을 정합니다.</p>
 
         <div class="setting-item">
           <label for="notesFolder">노트 저장 폴더</label>
-          <input type="text" id="notesFolder" placeholder="Threads Clipper" value="Threads Clipper">
+          <input type="text" id="notesFolder" placeholder="Threads" value="Threads">
+          <p class="setting-hint">Obsidian vault 최상위 기준 경로</p>
         </div>
 
         <div class="setting-item">
           <label class="toggle-label">
-            <input type="checkbox" id="useYearMonthFolders" checked>
+            <input type="checkbox" id="useYearMonthFolders">
             <span class="toggle-slider"></span>
-            <span class="label-text">연/월 하위 폴더 사용</span>
+            <span class="label-text">년도/월 폴더로 구분</span>
           </label>
-          <p class="setting-hint">기본값: `Threads Clipper/2026/04/`</p>
+          <p class="setting-hint">활성화 시 Threads/2026/01/ 형식으로 저장</p>
         </div>
 
         <div class="setting-item">
-          <label for="imageFolder">이미지 저장 폴더 이름</label>
-          <input type="text" id="imageFolder" placeholder="Threads Clipper_media" value="Threads Clipper_media">
-          <p class="setting-hint">URI 모드에서는 미디어를 외부 링크로 남기지만, 경로 규칙은 함께 저장합니다.</p>
+          <label for="imageFolder">이미지 저장 폴더</label>
+          <input type="text" id="imageFolder" placeholder="Threads_img" value="Threads_img">
+          <p class="setting-hint">이미지를 저장할 폴더 (노트 폴더와 같은 레벨)</p>
         </div>
 
-        <div class="setting-item" id="imageFolderModeContainer">
-          <label for="imageFolderMode">이미지 폴더 방식</label>
+        <div class="setting-item" id="imageFolderModeContainer" style="display: none;">
+          <label for="imageFolderMode">이미지 저장 방식</label>
           <select id="imageFolderMode">
-            <option value="fixed">고정 폴더 사용</option>
-            <option value="relative" selected>노트 폴더와 함께 월별 media 폴더 사용</option>
+            <option value="fixed">고정 폴더 사용 (위 설정값)</option>
+            <option value="relative">노트 폴더 연동 (년도/월_img)</option>
           </select>
+          <p class="setting-hint">연동 시 노트와 같은 위치에 _img 폴더 생성</p>
         </div>
       </section>
 
+      <!-- File Naming Settings -->
       <section class="settings-section">
-        <h2>🖼️ 저장 옵션</h2>
+        <h2>📝 파일명 및 미디어 설정</h2>
+
         <div class="setting-item">
           <label for="fileNameType">파일명 기준</label>
           <select id="fileNameType">
             <option value="postDate">게시글 등록일</option>
             <option value="saveDate">저장일</option>
           </select>
-          <p class="setting-hint">형식: `@작성자_YYYYMMDD_HHmm.md`</p>
+          <p class="setting-hint">형식: @작성자_YYYYMMDD_HHmm.md</p>
         </div>
 
         <div class="setting-item">
-          <label class="toggle-label disabled-toggle">
-            <input type="checkbox" id="downloadImages" disabled>
+          <label class="toggle-label">
+            <input type="checkbox" id="downloadImages" checked>
             <span class="toggle-slider"></span>
-            <span class="label-text">이미지를 로컬에 저장</span>
+            <span class="label-text">이미지 로컬 다운로드</span>
           </label>
-          <p class="setting-hint">URI 출시판에서는 지원하지 않습니다. 미디어는 링크로 기록됩니다.</p>
+          <p class="setting-hint">비활성화 시 URL 링크만 저장</p>
         </div>
 
         <div class="setting-item">
@@ -127,6 +379,7 @@
         </div>
       </section>
 
+      <!-- Save Button -->
       <div class="button-group">
         <button id="saveSettings" class="btn btn-primary">💾 설정 저장</button>
         <button id="resetSettings" class="btn btn-secondary">🔄 기본값 복원</button>
@@ -136,10 +389,11 @@
     </main>
 
     <footer>
-      <p>Threads Clipper for Obsidian <span id="versionText"></span></p>
+      <p>Threads to Obsidian <span id="versionText"></span></p>
     </footer>
   </div>
 
   <script src="options.js"></script>
 </body>
+
 </html>

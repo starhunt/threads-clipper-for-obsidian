@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Threads Clipper for Obsidian",
-  "version": "1.1.0",
-  "description": "Save Threads posts to Obsidian via Obsidian URI when you like or bookmark them.",
+  "name": "Threads to Obsidian",
+  "version": "1.4.4",
+  "description": "Save Threads posts to Obsidian via Local REST API",
   "default_locale": "ko",
   "minimum_chrome_version": "116",
   "permissions": [
@@ -14,8 +14,24 @@
   "host_permissions": [
     "https://www.threads.net/*",
     "https://www.threads.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://localhost/*",
+    "https://127.0.0.1/*",
     "https://*.cdninstagram.com/*",
-    "https://*.fbcdn.net/*"
+    "https://*.fbcdn.net/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.x.ai/*",
+    "https://api.z.ai/*"
+  ],
+  "optional_host_permissions": [
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.x.ai/*",
+    "https://api.z.ai/*"
   ],
   "icons": {
     "16": "assets/icons/icon16.png",
@@ -43,7 +59,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Threads Clipper for Obsidian"
+    "default_title": "Threads to Obsidian"
   },
   "options_ui": {
     "page": "options/options.html",

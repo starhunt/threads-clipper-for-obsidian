@@ -1,47 +1,42 @@
-# Architecture (Threads Clipper for Obsidian)
+# Architecture (Threads to Obsidian)
 
 ## Goal
+Capture user-triggered Threads interactions (Like/Bookmark), extract post data, transform to Markdown (optional AI), and save into Obsidian via Local REST API.
 
-Capture user-triggered Threads actions (Like / Bookmark), extract post data, render Markdown, and create a new note inside Obsidian through the built-in Obsidian URI scheme.
+## Runtime Layers
 
-## Runtime layers
+1. **Content layer (`content/content.js`)**
+   - Detects Threads UI events and extracts post/thread metadata.
+   - Sends normalized payload to background worker.
 
-1. **Content script (`content/content.js`)**
-   - Detects Like and Bookmark actions on Threads
-   - Extracts post, media, and thread metadata from the DOM
-   - Builds Markdown and opens `obsidian://new`
-   - Copies note content to the clipboard for Obsidian to consume
+2. **Orchestration layer (`background/service-worker.js`)**
+   - Receives save jobs from content scripts.
+   - Applies settings, path templates, and dedupe logic.
+   - Calls AI service (optional) and Obsidian API.
 
-2. **Background service worker (`background/service-worker.js`)**
-   - Stores user settings
-   - Tracks lightweight local usage counters
-   - Emits save notifications after the URI flow is prepared
+3. **AI integration layer (`background/ai-service.js`)**
+   - Provider-specific API handling (OpenAI/Gemini/Anthropic/Grok/Z.AI/Custom).
+   - Only active when AI mode is enabled by user.
 
-3. **Settings / popup UI (`options/*`, `popup/*`)**
-   - Configures vault name and note path rules
-   - Exposes trigger toggles and save stats
-   - Documents the URI-based save flow clearly
+4. **Settings/UI layer (`options/*`, `popup/*`)**
+   - Connection test for Local REST API.
+   - Provider setup and prompt template configuration.
 
-## Data flow
+## Data Flow
 
-Threads UI action
-→ DOM extraction in content script
-→ Markdown generation
-→ Copy Markdown to clipboard
-→ Open `obsidian://new`
-→ Obsidian creates the note in the target vault/path
-→ Success toast / notification
+Threads Event -> Content Extraction -> Background Job ->
+(Option A) Markdown Render -> Obsidian Write
+(Option B) AI Transform -> Markdown Render -> Obsidian Write
 
-## Security / privacy boundaries
+## Security/Privacy Boundaries
 
-- No AI processing
-- No remote developer backend
-- No analytics / tracking
-- No Local REST API dependency
-- Network access limited to Threads domains and media CDN hosts
+- No analytics/tracking SDK.
+- API keys stored in browser storage only.
+- Network calls restricted to Threads + local Obsidian + selected AI provider endpoints.
+- Save actions are user-triggered (Like/Bookmark), not passive scraping.
 
-## Failure handling
+## Failure Handling
 
-- Clipboard write failure: show a clear error toast
-- Invalid extension context: ask the user to reload the page
-- Missing vault name: still create the note, but disable precise reopen behavior
+- Obsidian unavailable: show clear toast/error and skip write.
+- AI provider failure: fallback to non-AI markdown save if possible.
+- Invalid settings: block save with actionable message.
