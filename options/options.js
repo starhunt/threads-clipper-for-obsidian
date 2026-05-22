@@ -567,6 +567,23 @@ async function testProviderConnection(provider) {
             return;
         }
 
+        // Custom endpoints land on user-provided hosts that aren't in manifest host_permissions.
+        // Ask for the host permission up front so the fetch in the service worker actually goes through.
+        if (provider === 'custom' && endpoint) {
+            try {
+                const url = new URL(endpoint);
+                const origin = `${url.protocol}//${url.hostname}/*`;
+                const granted = await chrome.permissions.request({ origins: [origin] });
+                if (!granted) {
+                    resultEl.textContent = `❌ ${i18n.getMessage('permissionDenied', url.hostname)}`;
+                    resultEl.className = 'test-result error';
+                    return;
+                }
+            } catch (e) {
+                // Invalid URL — let the fetch surface a clear error below.
+            }
+        }
+
         const result = await chrome.runtime.sendMessage({
             type: 'TEST_AI_CONNECTION',
             provider,

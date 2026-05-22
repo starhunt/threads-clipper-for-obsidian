@@ -662,10 +662,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const stored = await getSettings();
         // Override with values from the message so the test reflects exactly what the user typed
         // (provider card may not be the active provider yet, and key/model may differ from saved).
+        // Use message values verbatim when provided (an empty apiKey is intentional for Custom/Local).
         const testSettings = {
           ...stored,
           aiProvider: message.provider || stored.aiProvider,
-          aiApiKey: (message.apiKey !== undefined ? message.apiKey : stored.aiApiKey) || stored.aiApiKey,
+          aiApiKey: message.apiKey !== undefined ? message.apiKey : stored.aiApiKey,
           aiModel: message.model || stored.aiModel,
           aiEndpoint: message.endpoint || stored.aiEndpoint
         };
