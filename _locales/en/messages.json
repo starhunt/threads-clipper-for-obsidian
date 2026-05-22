@@ -1,5 +1,5 @@
 {
-  "extName": { "message": "Threads to Obsidian" },
+  "extName": { "message": "Threads Clipper for Obsidian" },
   "extDesc": { "message": "Save Threads posts to Obsidian via Local REST API or Obsidian URI" },
 
   "statusChecking": { "message": "Checking connection..." },
@@ -15,7 +15,7 @@
   "testConnection": { "message": "Test Connection" },
   "help": { "message": "Help" },
 
-  "optionsTitle": { "message": "Threads to Obsidian Settings" },
+  "optionsTitle": { "message": "Threads Clipper for Obsidian Settings" },
   "optionsSubtitle": { "message": "Manage settings for saving Threads posts to Obsidian." },
 
   "languageSettings": { "message": "Language" },

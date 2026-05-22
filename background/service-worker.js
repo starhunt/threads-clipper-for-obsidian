@@ -604,7 +604,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               chrome.notifications?.create({
                 type: 'basic',
                 iconUrl: 'assets/icons/icon48.png',
-                title: 'Threads to Obsidian',
+                title: self.i18n.getMessage('extName'),
                 message: `Saved: ${message.data.filename}`
               });
             }

@@ -1,5 +1,5 @@
 {
-  "extName": { "message": "Threads to Obsidian" },
+  "extName": { "message": "Threads Clipper for Obsidian" },
   "extDesc": { "message": "Local REST API 또는 Obsidian URI로 Threads 게시글을 Obsidian에 저장합니다" },
 
   "statusChecking": { "message": "연결 확인 중..." },
@@ -15,7 +15,7 @@
   "testConnection": { "message": "연결 테스트" },
   "help": { "message": "도움말" },
 
-  "optionsTitle": { "message": "Threads to Obsidian 설정" },
+  "optionsTitle": { "message": "Threads Clipper for Obsidian 설정" },
   "optionsSubtitle": { "message": "Threads 게시글을 Obsidian에 저장하는 설정을 관리합니다." },
 
   "languageSettings": { "message": "언어" },
