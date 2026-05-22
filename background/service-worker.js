@@ -1,8 +1,12 @@
 // Threads to Obsidian - Background Service Worker
 // Handles communication between content script and Obsidian REST API
 
-// Import AI service
+// Import shared i18n + AI service
+importScripts('../shared/i18n.js');
 importScripts('ai-service.js');
+
+// Eager-initialize i18n so the first message handler doesn't race.
+const i18nReady = self.i18n.init();
 
 // fetch with timeout using AbortController
 function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
@@ -31,14 +35,15 @@ function sanitizeFilename(name) {
 
 // HTTP 상태 코드별 사용자 친화적 에러 메시지
 function getHttpErrorMessage(status, context) {
+  const t = self.i18n.getMessage.bind(self.i18n);
   switch (status) {
-    case 401: return `인증 실패 (${context}): API 키를 확인하세요`;
-    case 403: return `접근 거부 (${context}): 권한을 확인하세요`;
-    case 404: return `경로를 찾을 수 없음 (${context}): 폴더가 존재하는지 확인하세요`;
-    case 429: return `요청 한도 초과 (${context}): 잠시 후 다시 시도하세요`;
+    case 401: return t('errAuth', context);
+    case 403: return t('errForbidden', context);
+    case 404: return t('errNotFound', context);
+    case 429: return t('errRateLimit', context);
     default:
-      if (status >= 500) return `서버 오류 (${context}): Obsidian을 확인하세요 (${status})`;
-      return `${context} 실패: HTTP ${status}`;
+      if (status >= 500) return t('errServer', context, status);
+      return t('errGeneric', context, status);
   }
 }
 
@@ -72,6 +77,12 @@ const DEFAULT_SETTINGS = {
 
   // Notification
   showNotification: true,
+
+  // Comment collection
+  collectComments: false,
+  commentMaxCount: 20,
+  commentScope: 'all', // 'all' or 'authorOnly'
+  commentMinLength: 0,
 
   // AI Settings
   aiEnabled: false,
@@ -171,7 +182,7 @@ async function saveToObsidian(noteData) {
     });
 
     if (!noteResponse.ok) {
-      throw new Error(getHttpErrorMessage(noteResponse.status, '노트 저장'));
+      throw new Error(getHttpErrorMessage(noteResponse.status, self.i18n.getMessage('errNoteSave')));
     }
 
     // Download and save images if enabled
@@ -207,7 +218,7 @@ async function saveImageToObsidian(settings, imageData, imageFolderPath) {
   // Fetch the image
   const imageResponse = await fetchWithTimeout(url, {}, 30000);
   if (!imageResponse.ok) {
-    throw new Error(getHttpErrorMessage(imageResponse.status, '이미지 다운로드'));
+    throw new Error(getHttpErrorMessage(imageResponse.status, self.i18n.getMessage('errImageDownload')));
   }
 
   const imageBlob = await imageResponse.blob();
@@ -229,7 +240,7 @@ async function saveImageToObsidian(settings, imageData, imageFolderPath) {
   });
 
   if (!response.ok) {
-    throw new Error(getHttpErrorMessage(response.status, '이미지 저장'));
+    throw new Error(getHttpErrorMessage(response.status, self.i18n.getMessage('errImageSave')));
   }
 
   return { success: true, path: imagePath };
@@ -270,7 +281,7 @@ async function saveWithAI(data, sender) {
 
     try {
       // Single API call for both title and content
-      sendProgress('content', 'AI 변환 중...');
+      sendProgress('content', self.i18n.getMessage('stageContent'));
       console.log('[Threads to Obsidian] Calling AI for transformation...');
 
       const result = await self.aiService.transformWithTitle(postData, settings);
@@ -288,7 +299,7 @@ async function saveWithAI(data, sender) {
         });
         aiUsed = true;
       } else {
-        failureReason = 'AI가 빈 응답을 반환했습니다.';
+        failureReason = self.i18n.getMessage('errAiEmptyResponse');
         console.warn('[Threads to Obsidian] AI returned empty content');
       }
     } catch (error) {
@@ -302,17 +313,17 @@ async function saveWithAI(data, sender) {
   } else {
     // Log why AI was not used
     if (!settings.aiEnabled) {
-      failureReason = 'AI 변환이 비활성화되어 있습니다.';
+      failureReason = self.i18n.getMessage('errAiDisabled');
     } else if (!settings.aiApiKey) {
-      failureReason = 'API 키가 설정되지 않았습니다.';
+      failureReason = self.i18n.getMessage('errNoApiKey');
     } else if (!self.aiService) {
-      failureReason = 'AI 서비스를 로드할 수 없습니다.';
+      failureReason = self.i18n.getMessage('errAiServiceLoad');
     }
     console.log('[Threads to Obsidian] AI not used:', failureReason);
   }
 
   // Step 2: Save to Obsidian
-  sendProgress('saving', 'Obsidian에 저장 중...');
+  sendProgress('saving', self.i18n.getMessage('stageSaving'));
 
   // Build filename
   const username = sanitizeFilename(postData.author.username.replace('@', ''));
@@ -369,7 +380,7 @@ async function transformOnly(data, sender) {
 
   if (settings.aiEnabled && settings.aiApiKey && self.aiService) {
     try {
-      sendProgress('content', 'AI 변환 중...');
+      sendProgress('content', self.i18n.getMessage('stageContent'));
       const result = await self.aiService.transformWithTitle(postData, settings);
       if (result.error) {
         failureReason = result.error;
@@ -378,13 +389,13 @@ async function transformOnly(data, sender) {
         transformedContent = result.content;
         aiUsed = true;
       } else {
-        failureReason = 'AI가 빈 응답을 반환했습니다.';
+        failureReason = self.i18n.getMessage('errAiEmptyResponse');
       }
     } catch (error) {
       failureReason = error.message;
     }
   } else {
-    failureReason = !settings.aiEnabled ? 'AI 비활성화' : !settings.aiApiKey ? 'API 키 없음' : 'AI 서비스 미로드';
+    failureReason = !settings.aiEnabled ? self.i18n.getMessage('errAiDisabled') : !settings.aiApiKey ? self.i18n.getMessage('errNoApiKey') : self.i18n.getMessage('errAiServiceLoad');
   }
 
   // 파일명 생성
@@ -437,8 +448,9 @@ function buildAIMarkdown(postData, aiContent, settings, date) {
     day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
   });
 
+  const t = self.i18n.getMessage.bind(self.i18n);
   const savedDate = formatSeoulDate(now);
-  const postDate = postData.timestamp ? formatSeoulDate(new Date(postData.timestamp)) : '알 수 없음';
+  const postDate = postData.timestamp ? formatSeoulDate(new Date(postData.timestamp)) : t('mdUnknown');
 
   // Extract topic from post
   const topic = postData.content.topic || null;
@@ -459,6 +471,10 @@ function buildAIMarkdown(postData, aiContent, settings, date) {
     md += `thread_count: ${postData.chainedPosts.length + 1}\n`;
   }
 
+  if (postData.comments?.length > 0) {
+    md += `comment_count: ${postData.comments.length}\n`;
+  }
+
   md += 'tags:\n  - threads\n';
   if (topic) {
     md += `  - ${topic.replace(/^#/, '')}\n`;
@@ -469,15 +485,15 @@ function buildAIMarkdown(postData, aiContent, settings, date) {
   md += '---\n\n';
 
   // Post info section
-  md += '## 📋 게시글 정보\n\n';
-  md += '| 항목 | 내용 |\n';
+  md += `## 📋 ${t('mdPostInfo')}\n\n`;
+  md += `| ${t('mdItem')} | ${t('mdValue')} |\n`;
   md += '|------|------|\n';
-  md += `| 게시자 | [${postData.author.displayName} (${postData.author.username})](https://www.threads.com/${postData.author.username}) |\n`;
-  md += `| 게시URL | [Threads에서 보기](${postData.url}) |\n`;
-  md += `| 게시일 | ${postDate} |\n`;
-  md += `| 저장일 | ${savedDate} |\n`;
+  md += `| ${t('mdAuthor')} | [${postData.author.displayName} (${postData.author.username})](https://www.threads.com/${postData.author.username}) |\n`;
+  md += `| ${t('mdPostUrl')} | [${t('mdViewOnThreads')}](${postData.url}) |\n`;
+  md += `| ${t('mdPostDate')} | ${postDate} |\n`;
+  md += `| ${t('mdSavedDate')} | ${savedDate} |\n`;
   if (topic) {
-    md += `| 주제 | ${topic} |\n`;
+    md += `| ${t('mdTopic')} | ${topic} |\n`;
   }
   md += '\n---\n\n';
 
@@ -507,16 +523,16 @@ function buildAIMarkdown(postData, aiContent, settings, date) {
           }
           result += `![[${localPath}]]\n\n`;
         } else {
-          const label = source === 'master' ? '마스터글' : `연관글 ${postIndex + 2}`;
-          result += `<iframe width="100%" height="400" src="${m.url}" title="${label} 이미지 ${imageIndex}" frameborder="0"></iframe>\n\n`;
+          const label = source === 'master' ? t('mdMasterPost') : t('mdRelatedPost', postIndex + 2);
+          result += `<iframe width="100%" height="400" src="${m.url}" title="${label} — ${t('mdImageAlt')} ${imageIndex}" frameborder="0"></iframe>\n\n`;
         }
       } else if (m.type === 'video') {
         const ytMatch = m.url?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
         if (ytMatch) {
           result += `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>\n\n`;
         } else {
-          const label = source === 'master' ? '마스터글' : `연관글 ${postIndex + 2}`;
-          result += `<iframe width="100%" height="315" src="${m.url}" title="${label} 동영상" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>\n\n`;
+          const label = source === 'master' ? t('mdMasterPost') : t('mdRelatedPost', postIndex + 2);
+          result += `<iframe width="100%" height="315" src="${m.url}" title="${label} — ${t('mdVideoLink')}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>\n\n`;
         }
       }
     });
@@ -524,7 +540,7 @@ function buildAIMarkdown(postData, aiContent, settings, date) {
   }
 
   // Original content section with inline media
-  md += '\n\n---\n\n## 6. 원문\n\n';
+  md += `\n\n---\n\n## 6. ${t('mdOriginal')}\n\n`;
   md += `> ${postData.content.text.split('\n').join('\n> ')}\n\n`;
 
   // Master post media (inline, right after master text)
@@ -545,11 +561,29 @@ function buildAIMarkdown(postData, aiContent, settings, date) {
     });
   }
 
+  // Comments section (raw, not sent to AI)
+  if (postData.comments?.length > 0) {
+    md += `\n---\n\n## ${t('mdComments', postData.comments.length)}\n\n`;
+    postData.comments.forEach((c) => {
+      const handle = c.author?.username || '@unknown';
+      const name = c.author?.displayName ? ` (${c.author.displayName})` : '';
+      const ts = c.timestamp ? formatSeoulDate(new Date(c.timestamp)) : '';
+      md += `### ${handle}${name}${ts ? ' — ' + ts : ''}\n`;
+      if (c.text) {
+        md += `> ${c.text.split('\n').join('\n> ')}\n`;
+      }
+      if (c.url) {
+        md += `\n[${t('mdCommentSource')}](${c.url})\n`;
+      }
+      md += '\n';
+    });
+  }
+
   // My Notes section
-  md += '\n---\n\n## 7. My Notes\n\n';
-  md += '### 관련 지식\n- \n\n';
-  md += '### 아이디어\n- \n\n';
-  md += '### 메모\n- \n\n';
+  md += `\n---\n\n## 7. ${t('mdMyNotes')}\n\n`;
+  md += `### ${t('mdRelatedKnowledge')}\n- \n\n`;
+  md += `### ${t('mdIdeas')}\n- \n\n`;
+  md += `### ${t('mdMemos')}\n- \n\n`;
   md += '---\n\n';
   md += `*Clipped: ${savedDate}*\n`;
 
@@ -627,7 +661,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (self.aiService) {
         self.aiService.testAIConnection(settings).then(result => sendResponse(result));
       } else {
-        sendResponse({ success: false, message: 'AI 서비스를 로드할 수 없습니다.' });
+        sendResponse({ success: false, message: self.i18n.getMessage('errAiServiceLoad') });
       }
     });
     return true;
@@ -649,11 +683,11 @@ async function testConnection() {
     if (response.ok) {
       return { success: true, message: 'Connected to Obsidian REST API' };
     } else {
-      return { success: false, message: getHttpErrorMessage(response.status, '연결 테스트') };
+      return { success: false, message: getHttpErrorMessage(response.status, self.i18n.getMessage('testConnection')) };
     }
   } catch (error) {
-    const msg = error.name === 'AbortError' ? '연결 시간 초과 (10초)' : error.message;
-    return { success: false, message: `연결 오류: ${msg}` };
+    const msg = error.name === 'AbortError' ? self.i18n.getMessage('errConnTimeout') : error.message;
+    return { success: false, message: self.i18n.getMessage('errConnError', msg) };
   }
 }
 

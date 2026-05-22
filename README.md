@@ -117,6 +117,10 @@ When enabled, AI analyzes posts and generates structured notes with:
 | Download images | Save images locally | Off |
 | Image folder mode | Centralized / Per-note subfolder | Centralized |
 | AI transformation | AI-powered content conversion | Off |
+| Collect comments | Save replies under the post into the note | Off |
+| Comment max count | Up to N comments per post | 20 |
+| Comment scope | All / Author replies only | All |
+| Comment min length | Filter out short noise comments | 0 |
 
 ## Saved Note Format
 
@@ -179,7 +183,7 @@ tags:
 ## Project Structure
 
 ```
-sns_to_obsidian/
+threads-clipper-for-obsidian/
 ├── manifest.json              # Extension manifest (MV3)
 ├── background/
 │   ├── service-worker.js      # Background service worker
@@ -210,7 +214,7 @@ Build a Chrome Web Store zip with preflight checks:
 ```
 
 Output:
-- `release/sns_to_obsidian-cws-v<version>.zip`
+- `release/threads-clipper-for-obsidian-cws-v<version>.zip`
 
 ## Architecture Notes
 

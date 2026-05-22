@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -19,18 +19,18 @@
             <div class="status-card" id="statusCard">
                 <div class="status-indicator" id="statusIndicator"></div>
                 <div class="status-text">
-                    <span id="statusMessage">연결 확인 중...</span>
+                    <span id="statusMessage" data-i18n="statusChecking">Checking connection...</span>
                 </div>
             </div>
 
             <!-- Quick Stats -->
             <div class="stats-section">
                 <div class="stat-item">
-                    <span class="stat-label">저장된 게시글</span>
+                    <span class="stat-label" data-i18n="savedPosts">Saved Posts</span>
                     <span class="stat-value" id="savedCount">-</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">오늘</span>
+                    <span class="stat-label" data-i18n="today">Today</span>
                     <span class="stat-value" id="todayCount">-</span>
                 </div>
             </div>
@@ -38,12 +38,12 @@
             <!-- Quick Settings -->
             <div class="quick-settings">
                 <label class="toggle-row">
-                    <span>좋아요 시 저장</span>
+                    <span data-i18n="saveOnLike">Save on Like</span>
                     <input type="checkbox" id="quickLike" checked>
                     <span class="toggle-slider"></span>
                 </label>
                 <label class="toggle-row">
-                    <span>저장 시 저장</span>
+                    <span data-i18n="saveOnSave">Save on Bookmark</span>
                     <input type="checkbox" id="quickSave" checked>
                     <span class="toggle-slider"></span>
                 </label>
@@ -51,16 +51,17 @@
 
             <!-- Actions -->
             <div class="actions">
-                <button id="openOptions" class="btn btn-primary">⚙️ 설정</button>
-                <button id="testConnection" class="btn btn-secondary">🔍 연결 테스트</button>
+                <button id="openOptions" class="btn btn-primary">⚙️ <span data-i18n="settings">Settings</span></button>
+                <button id="testConnection" class="btn btn-secondary">🔍 <span data-i18n="testConnection">Test Connection</span></button>
             </div>
         </main>
 
         <footer>
-            <p><span id="versionText"></span> • <a href="#" id="helpLink">도움말</a></p>
+            <p><span id="versionText"></span> • <a href="#" id="helpLink" data-i18n="help">Help</a></p>
         </footer>
     </div>
 
+    <script src="../shared/i18n.js"></script>
     <script src="popup.js"></script>
 </body>
 

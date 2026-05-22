@@ -1,6 +1,5 @@
 // Threads to Obsidian - Popup Script
 
-// DOM Elements
 const elements = {
     statusCard: document.getElementById('statusCard'),
     statusIndicator: document.getElementById('statusIndicator'),
@@ -14,14 +13,14 @@ const elements = {
     helpLink: document.getElementById('helpLink')
 };
 
-// Initialize popup
 async function init() {
+    await i18n.init();
+    i18n.applyTranslations(document);
     await loadSettings();
     await checkConnection();
     await loadStats();
 }
 
-// Load settings
 async function loadSettings() {
     const stored = await chrome.storage.sync.get('settings');
     const settings = stored.settings || {};
@@ -30,32 +29,29 @@ async function loadSettings() {
     elements.quickSave.checked = settings.triggerOnSave !== false;
 }
 
-// Check connection to Obsidian
 async function checkConnection() {
     try {
         const result = await chrome.runtime.sendMessage({ type: 'TEST_CONNECTION' });
 
         if (result.success) {
             elements.statusIndicator.className = 'status-indicator connected';
-            elements.statusMessage.textContent = 'Obsidian 연결됨';
+            elements.statusMessage.textContent = i18n.getMessage('statusConnected');
         } else {
             elements.statusIndicator.className = 'status-indicator error';
-            elements.statusMessage.textContent = '연결 실패';
+            elements.statusMessage.textContent = i18n.getMessage('statusFailed');
         }
     } catch (error) {
         elements.statusIndicator.className = 'status-indicator error';
-        elements.statusMessage.textContent = '연결 오류';
+        elements.statusMessage.textContent = i18n.getMessage('statusError');
     }
 }
 
-// Load stats from storage
 async function loadStats() {
     const stored = await chrome.storage.local.get(['savedPosts', 'todayPosts', 'lastDate']);
 
     const today = new Date().toDateString();
     let todayPosts = stored.todayPosts || 0;
 
-    // Reset today count if it's a new day
     if (stored.lastDate !== today) {
         todayPosts = 0;
         await chrome.storage.local.set({ todayPosts: 0, lastDate: today });
@@ -65,7 +61,6 @@ async function loadStats() {
     elements.todayCount.textContent = todayPosts;
 }
 
-// Save quick settings
 async function saveQuickSettings() {
     const stored = await chrome.storage.sync.get('settings');
     const settings = stored.settings || {};
@@ -76,7 +71,6 @@ async function saveQuickSettings() {
     await chrome.storage.sync.set({ settings });
 }
 
-// Event listeners
 elements.quickLike.addEventListener('change', saveQuickSettings);
 elements.quickSave.addEventListener('change', saveQuickSettings);
 
@@ -86,20 +80,18 @@ elements.openOptions.addEventListener('click', () => {
 
 elements.testConnection.addEventListener('click', async () => {
     elements.statusIndicator.className = 'status-indicator';
-    elements.statusMessage.textContent = '연결 확인 중...';
+    elements.statusMessage.textContent = i18n.getMessage('statusChecking');
     await checkConnection();
 });
 
 elements.helpLink.addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: 'https://github.com/starhunt/sns_to_obsidian#readme' });
+    chrome.tabs.create({ url: 'https://github.com/starhunt/threads-clipper-for-obsidian#readme' });
 });
 
-// Set version from manifest
 const versionEl = document.getElementById('versionText');
 if (versionEl) {
     versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
 }
 
-// Initialize
 init();

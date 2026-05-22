@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Threads to Obsidian",
-  "version": "1.4.4",
-  "description": "Save Threads posts to Obsidian via Local REST API",
-  "default_locale": "ko",
+  "name": "__MSG_extName__",
+  "version": "1.5.0",
+  "description": "__MSG_extDesc__",
+  "default_locale": "en",
   "minimum_chrome_version": "116",
   "permissions": [
     "storage",
@@ -49,6 +49,7 @@
         "https://www.threads.com/*"
       ],
       "js": [
+        "shared/i18n.js",
         "content/content.js"
       ],
       "css": [
@@ -59,7 +60,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Threads to Obsidian"
+    "default_title": "__MSG_extName__"
   },
   "options_ui": {
     "page": "options/options.html",
@@ -68,7 +69,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "assets/icons/*"
+        "assets/icons/*",
+        "_locales/*"
       ],
       "matches": [
         "https://www.threads.net/*",

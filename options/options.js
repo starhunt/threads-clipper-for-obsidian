@@ -1,7 +1,56 @@
 // Threads to Obsidian - Options Page Script
 
-// Default prompt template for AI transformation (includes title generation)
-const DEFAULT_PROMPT_TEMPLATE = `다음은 Threads SNS 게시글입니다. 이 게시글을 분석하여 아래 형식으로 변환해주세요.
+// English default prompt template (used when language = en or auto-resolved to en)
+const DEFAULT_PROMPT_TEMPLATE_EN = `Below is a Threads SNS post. Analyze it and transform it into the format below.
+Write all content in English.
+
+---
+Author: {author}
+Original:
+{content}
+---
+
+**[Required] The very first line of your response MUST be the title in this exact format:**
+<<TITLE>>A concise summary title within 15 characters<</TITLE>>
+
+(Do not add anything besides the title on that line. Start the body on the next line.)
+
+## 1. Executive Summary
+
+(1) The core message in one sentence
+(2) Three main points as a numbered list
+(3) Description of the target audience
+
+---
+
+## 2. Key Concepts
+
+| Term | Description | Context |
+|------|-------------|---------|
+(Extract major concepts from the post into a table)
+
+---
+
+## 3. Detailed Notes
+
+(Explain the content paragraph by paragraph in detail, including background, main arguments, and supporting evidence)
+
+---
+
+## 4. Action Items
+
+- [ ] (Actionable items derived from the post as a checkbox list)
+
+---
+
+## 5. Feynman Explanation
+
+(Use the Feynman technique to explain the core content so even a child can understand)
+
+Follow the format above exactly. Keep section headers and dividers intact.`;
+
+// Korean default prompt template
+const DEFAULT_PROMPT_TEMPLATE_KO = `다음은 Threads SNS 게시글입니다. 이 게시글을 분석하여 아래 형식으로 변환해주세요.
 모든 내용은 한국어로 작성하세요.
 
 ---
@@ -49,41 +98,31 @@ const DEFAULT_PROMPT_TEMPLATE = `다음은 Threads SNS 게시글입니다. 이 �
 
 위 형식을 정확히 따라서 출력하세요. 섹션 헤더와 구분선을 유지하세요.`;
 
+function getDefaultPromptTemplate() {
+    return i18n.getCurrentLanguage() === 'ko' ? DEFAULT_PROMPT_TEMPLATE_KO : DEFAULT_PROMPT_TEMPLATE_EN;
+}
+
 // AI Provider configurations
 const AI_PROVIDERS = {
-    openai: {
-        defaultModel: 'gpt-4o',
-        showEndpoint: false
-    },
-    gemini: {
-        defaultModel: 'gemini-2.0-flash',
-        showEndpoint: false
-    },
-    anthropic: {
-        defaultModel: 'claude-3-5-sonnet-latest',
-        showEndpoint: false
-    },
-    grok: {
-        defaultModel: 'grok-3',
-        showEndpoint: false
-    },
+    openai: { defaultModel: 'gpt-4o', showEndpoint: false },
+    gemini: { defaultModel: 'gemini-2.0-flash', showEndpoint: false },
+    anthropic: { defaultModel: 'claude-3-5-sonnet-latest', showEndpoint: false },
+    grok: { defaultModel: 'grok-3', showEndpoint: false },
     zai: {
         defaultModel: 'GLM-4.5',
         showEndpoint: true,
         defaultEndpoint: 'https://api.z.ai/api/coding/paas/v4/chat/completions'
     },
-    custom: {
-        defaultModel: '',
-        showEndpoint: true
-    }
+    custom: { defaultModel: '', showEndpoint: true }
 };
 
-// Default settings with per-provider configuration
+// Default settings (AI transformation OFF by default)
 const DEFAULT_SETTINGS = {
+    language: 'auto',
     triggerOnLike: true,
     triggerOnSave: true,
-    saveMethod: 'rest', // 'rest' or 'uri'
-    uriVaultMode: 'specified', // 'specified' or 'lastActive'
+    saveMethod: 'rest',
+    uriVaultMode: 'specified',
     protocol: 'http',
     host: 'localhost',
     port: '27123',
@@ -92,16 +131,20 @@ const DEFAULT_SETTINGS = {
     notesFolder: 'Threads',
     useYearMonthFolders: false,
     imageFolder: 'Threads_img',
-    imageFolderMode: 'fixed', // 'fixed' or 'relative'
+    imageFolderMode: 'fixed',
     fileNameType: 'postDate',
     downloadImages: false,
     showNotification: true,
-    // AI Settings
+    // Comment collection
+    collectComments: false,
+    commentMaxCount: 20,
+    commentScope: 'all',
+    commentMinLength: 0,
+    // AI Settings (disabled by default)
     aiEnabled: false,
-    aiActiveProvider: 'openai', // New: which provider is currently active
+    aiActiveProvider: 'openai',
     aiMaxTokens: 64000,
-    aiPromptTemplate: DEFAULT_PROMPT_TEMPLATE,
-    // Per-provider settings
+    aiPromptTemplate: '',
     providerSettings: {
         openai: { apiKey: '', model: 'gpt-4o-mini', endpoint: '' },
         gemini: { apiKey: '', model: 'gemini-2.0-flash', endpoint: '' },
@@ -110,7 +153,6 @@ const DEFAULT_SETTINGS = {
         zai: { apiKey: '', model: 'GLM-4.5', endpoint: 'https://api.z.ai/api/coding/paas/v4/chat/completions' },
         custom: { apiKey: '', model: '', endpoint: '' }
     },
-    // Legacy compatibility
     aiProvider: 'openai',
     aiApiKey: '',
     aiEndpoint: '',
@@ -118,8 +160,8 @@ const DEFAULT_SETTINGS = {
     aiApiKeys: {}
 };
 
-// DOM Elements (basic settings)
 const elements = {
+    language: document.getElementById('language'),
     triggerOnLike: document.getElementById('triggerOnLike'),
     triggerOnSave: document.getElementById('triggerOnSave'),
     saveMethod: document.getElementById('saveMethod'),
@@ -142,12 +184,16 @@ const elements = {
     fileNameType: document.getElementById('fileNameType'),
     downloadImages: document.getElementById('downloadImages'),
     showNotification: document.getElementById('showNotification'),
+    collectComments: document.getElementById('collectComments'),
+    commentMaxCount: document.getElementById('commentMaxCount'),
+    commentScope: document.getElementById('commentScope'),
+    commentMinLength: document.getElementById('commentMinLength'),
+    commentOptions: document.getElementById('commentOptions'),
     testConnection: document.getElementById('testConnection'),
     connectionStatus: document.getElementById('connectionStatus'),
     saveSettings: document.getElementById('saveSettings'),
     resetSettings: document.getElementById('resetSettings'),
     saveStatus: document.getElementById('saveStatus'),
-    // AI Elements
     aiEnabled: document.getElementById('aiEnabled'),
     aiActiveProvider: document.getElementById('aiActiveProvider'),
     aiMaxTokens: document.getElementById('aiMaxTokens'),
@@ -155,32 +201,26 @@ const elements = {
     resetPromptTemplate: document.getElementById('resetPromptTemplate')
 };
 
-// Provider list
 const PROVIDER_LIST = ['openai', 'gemini', 'anthropic', 'grok', 'zai', 'custom'];
 
-// Update provider status indicator
 function updateProviderStatus(provider, configured) {
     const statusEl = document.getElementById(`status-${provider}`);
     if (statusEl) {
-        statusEl.textContent = configured ? '✅ 설정됨' : '';
+        statusEl.textContent = configured ? `✅ ${i18n.getMessage('configured')}` : '';
         statusEl.className = 'provider-status ' + (configured ? 'configured' : 'not-configured');
     }
 }
 
-// Initialize model fields (no-op, all providers use text input now)
 function initializeProviderModels() {
-    // All providers now use text input - no initialization needed
+    // All providers use text input — no initialization needed.
 }
 
-// Load settings from storage
 async function loadSettings() {
     const stored = await chrome.storage.sync.get('settings');
     const settings = { ...DEFAULT_SETTINGS, ...stored.settings };
-
-    // Merge providerSettings
     const providerSettings = { ...DEFAULT_SETTINGS.providerSettings, ...(settings.providerSettings || {}) };
 
-    // Basic settings
+    elements.language.value = settings.language || 'auto';
     elements.triggerOnLike.checked = settings.triggerOnLike;
     elements.triggerOnSave.checked = settings.triggerOnSave;
     elements.saveMethod.value = settings.saveMethod || 'rest';
@@ -199,51 +239,42 @@ async function loadSettings() {
     elements.downloadImages.checked = settings.downloadImages;
     elements.showNotification.checked = settings.showNotification;
 
-    // Show/hide image folder mode based on year/month setting
+    elements.collectComments.checked = !!settings.collectComments;
+    elements.commentMaxCount.value = settings.commentMaxCount ?? 20;
+    elements.commentScope.value = settings.commentScope || 'all';
+    elements.commentMinLength.value = settings.commentMinLength ?? 0;
+    updateCommentOptionsVisibility();
+
     updateImageFolderModeVisibility();
 
-    // AI Settings
     elements.aiEnabled.checked = settings.aiEnabled;
     elements.aiActiveProvider.value = settings.aiActiveProvider || settings.aiProvider || 'openai';
     elements.aiMaxTokens.value = settings.aiMaxTokens || 64000;
-    elements.aiPromptTemplate.value = settings.aiPromptTemplate || DEFAULT_PROMPT_TEMPLATE;
+    elements.aiPromptTemplate.value = settings.aiPromptTemplate || getDefaultPromptTemplate();
 
-    // Initialize provider model dropdowns
     initializeProviderModels();
 
-    // Load per-provider settings into cards
     PROVIDER_LIST.forEach(provider => {
         const ps = providerSettings[provider] || {};
-
-        // API Key
         const apiKeyEl = document.getElementById(`apiKey-${provider}`);
         if (apiKeyEl) {
-            // Legacy migration: check old aiApiKeys
             const legacyKey = settings.aiApiKeys?.[provider] || '';
             apiKeyEl.value = ps.apiKey || legacyKey || '';
         }
-
-        // Model
         const modelEl = document.getElementById(`model-${provider}`);
         if (modelEl) {
             modelEl.value = ps.model || AI_PROVIDERS[provider]?.defaultModel || '';
         }
-
-        // Endpoint (for zai and custom)
         const endpointEl = document.getElementById(`endpoint-${provider}`);
         if (endpointEl) {
             endpointEl.value = ps.endpoint || AI_PROVIDERS[provider]?.defaultEndpoint || '';
         }
-
-        // Update status
         updateProviderStatus(provider, !!apiKeyEl?.value);
     });
 
-    // Highlight active provider card
     updateActiveProviderCard(settings.aiActiveProvider || settings.aiProvider || 'openai');
 }
 
-// Update active provider card highlight
 function updateActiveProviderCard(activeProvider) {
     PROVIDER_LIST.forEach(provider => {
         const card = document.querySelector(`.provider-card[data-provider="${provider}"]`);
@@ -253,9 +284,7 @@ function updateActiveProviderCard(activeProvider) {
     });
 }
 
-// Save settings to storage
-async function saveSettings() {
-    // Collect per-provider settings from cards
+function collectProviderSettings() {
     const providerSettings = {};
     PROVIDER_LIST.forEach(provider => {
         providerSettings[provider] = {
@@ -264,45 +293,64 @@ async function saveSettings() {
             endpoint: document.getElementById(`endpoint-${provider}`)?.value.trim() || ''
         };
     });
+    return providerSettings;
+}
 
+function buildSettingsObject() {
+    const providerSettings = collectProviderSettings();
     const activeProvider = elements.aiActiveProvider.value;
     const activePs = providerSettings[activeProvider];
 
-    const settings = {
-        triggerOnLike: elements.triggerOnLike.checked,
-        triggerOnSave: elements.triggerOnSave.checked,
-        saveMethod: elements.saveMethod.value,
-        uriVaultMode: elements.uriVaultMode.value,
-        protocol: elements.protocol.value,
-        host: elements.host.value.trim(),
-        port: elements.port.value.trim(),
-        apiKey: elements.apiKey.value.trim(),
-        vaultName: elements.vaultName.value.trim(),
-        notesFolder: elements.notesFolder.value.trim() || 'Threads',
-        useYearMonthFolders: elements.useYearMonthFolders.checked,
-        imageFolder: elements.imageFolder.value.trim() || 'Threads_img',
-        imageFolderMode: elements.imageFolderMode.value,
-        fileNameType: elements.fileNameType.value,
-        downloadImages: elements.downloadImages.checked,
-        showNotification: elements.showNotification.checked,
-        // AI Settings
-        aiEnabled: elements.aiEnabled.checked,
-        aiActiveProvider: activeProvider,
-        aiMaxTokens: parseInt(elements.aiMaxTokens.value) || 64000,
-        aiPromptTemplate: elements.aiPromptTemplate.value || DEFAULT_PROMPT_TEMPLATE,
-        providerSettings: providerSettings,
-        // Legacy compatibility fields (for service-worker)
-        aiProvider: activeProvider,
-        aiApiKey: activePs.apiKey,
-        aiModel: activePs.model,
-        aiEndpoint: activePs.endpoint,
-        aiApiKeys: Object.fromEntries(PROVIDER_LIST.map(p => [p, providerSettings[p].apiKey]))
+    return {
+        settings: {
+            language: elements.language.value,
+            triggerOnLike: elements.triggerOnLike.checked,
+            triggerOnSave: elements.triggerOnSave.checked,
+            saveMethod: elements.saveMethod.value,
+            uriVaultMode: elements.uriVaultMode.value,
+            protocol: elements.protocol.value,
+            host: elements.host.value.trim(),
+            port: elements.port.value.trim(),
+            apiKey: elements.apiKey.value.trim(),
+            vaultName: elements.vaultName.value.trim(),
+            notesFolder: elements.notesFolder.value.trim() || 'Threads',
+            useYearMonthFolders: elements.useYearMonthFolders.checked,
+            imageFolder: elements.imageFolder.value.trim() || 'Threads_img',
+            imageFolderMode: elements.imageFolderMode.value,
+            fileNameType: elements.fileNameType.value,
+            downloadImages: elements.downloadImages.checked,
+            showNotification: elements.showNotification.checked,
+            collectComments: elements.collectComments.checked,
+            commentMaxCount: clampInt(elements.commentMaxCount.value, 1, 100, 20),
+            commentScope: elements.commentScope.value,
+            commentMinLength: clampInt(elements.commentMinLength.value, 0, 500, 0),
+            aiEnabled: elements.aiEnabled.checked,
+            aiActiveProvider: activeProvider,
+            aiMaxTokens: parseInt(elements.aiMaxTokens.value) || 64000,
+            aiPromptTemplate: elements.aiPromptTemplate.value || getDefaultPromptTemplate(),
+            providerSettings,
+            aiProvider: activeProvider,
+            aiApiKey: activePs.apiKey,
+            aiModel: activePs.model,
+            aiEndpoint: activePs.endpoint,
+            aiApiKeys: Object.fromEntries(PROVIDER_LIST.map(p => [p, providerSettings[p].apiKey]))
+        },
+        providerSettings,
+        activeProvider
     };
+}
 
-    // 커스텀 엔드포인트에 대한 호스트 권한 요청
+async function saveSettings() {
+    const previousLanguage = (await chrome.storage.sync.get('settings'))?.settings?.language || 'auto';
+    const { settings, providerSettings, activeProvider } = buildSettingsObject();
+
+    // Request host permission for custom endpoints
     const customEndpoints = [];
     if (providerSettings.custom?.endpoint) customEndpoints.push(providerSettings.custom.endpoint);
-    if (providerSettings.zai?.endpoint && providerSettings.zai.endpoint !== 'https://api.z.ai/api/coding/paas/v4/chat/completions') {
+    if (
+        providerSettings.zai?.endpoint &&
+        providerSettings.zai.endpoint !== 'https://api.z.ai/api/coding/paas/v4/chat/completions'
+    ) {
         customEndpoints.push(providerSettings.zai.endpoint);
     }
 
@@ -312,7 +360,7 @@ async function saveSettings() {
             const origin = `${url.protocol}//${url.hostname}/*`;
             const granted = await chrome.permissions.request({ origins: [origin] });
             if (!granted) {
-                showStatus(elements.saveStatus, `⚠️ ${url.hostname} 접근 권한이 거부되었습니다. 해당 엔드포인트가 작동하지 않을 수 있습니다.`, 'error');
+                showStatus(elements.saveStatus, `⚠️ ${i18n.getMessage('permissionDenied', url.hostname)}`, 'error');
                 return;
             }
         } catch (e) {
@@ -321,116 +369,74 @@ async function saveSettings() {
     }
 
     await chrome.storage.sync.set({ settings });
-    showStatus(elements.saveStatus, '✅ 설정이 저장되었습니다.', 'success');
-
-    // Update active card highlight
+    showStatus(elements.saveStatus, `✅ ${i18n.getMessage('settingsSaved')}`, 'success');
     updateActiveProviderCard(activeProvider);
+
+    // Reload page if language changed so all i18n applies.
+    if (settings.language !== previousLanguage) {
+        setTimeout(() => location.reload(), 600);
+    }
 }
 
-// Save settings without showing notification
 async function saveSettingsQuietly() {
-    const providerSettings = {};
-    PROVIDER_LIST.forEach(provider => {
-        providerSettings[provider] = {
-            apiKey: document.getElementById(`apiKey-${provider}`)?.value.trim() || '',
-            model: document.getElementById(`model-${provider}`)?.value || '',
-            endpoint: document.getElementById(`endpoint-${provider}`)?.value.trim() || ''
-        };
-    });
-
-    const activeProvider = elements.aiActiveProvider.value;
-    const activePs = providerSettings[activeProvider];
-
-    const settings = {
-        triggerOnLike: elements.triggerOnLike.checked,
-        triggerOnSave: elements.triggerOnSave.checked,
-        saveMethod: elements.saveMethod.value,
-        uriVaultMode: elements.uriVaultMode.value,
-        protocol: elements.protocol.value,
-        host: elements.host.value.trim(),
-        port: elements.port.value.trim(),
-        apiKey: elements.apiKey.value.trim(),
-        vaultName: elements.vaultName.value.trim(),
-        notesFolder: elements.notesFolder.value.trim() || 'Threads',
-        useYearMonthFolders: elements.useYearMonthFolders.checked,
-        imageFolder: elements.imageFolder.value.trim() || 'Threads_img',
-        imageFolderMode: elements.imageFolderMode.value,
-        fileNameType: elements.fileNameType.value,
-        downloadImages: elements.downloadImages.checked,
-        showNotification: elements.showNotification.checked,
-        aiEnabled: elements.aiEnabled.checked,
-        aiActiveProvider: activeProvider,
-        aiMaxTokens: parseInt(elements.aiMaxTokens.value) || 64000,
-        aiPromptTemplate: elements.aiPromptTemplate.value || DEFAULT_PROMPT_TEMPLATE,
-        providerSettings: providerSettings,
-        aiProvider: activeProvider,
-        aiApiKey: activePs.apiKey,
-        aiModel: activePs.model,
-        aiEndpoint: activePs.endpoint,
-        aiApiKeys: Object.fromEntries(PROVIDER_LIST.map(p => [p, providerSettings[p].apiKey]))
-    };
-
+    const { settings } = buildSettingsObject();
     await chrome.storage.sync.set({ settings });
 }
 
-// Reset to default settings
 async function resetSettings() {
     await chrome.storage.sync.set({ settings: DEFAULT_SETTINGS });
     await loadSettings();
-    showStatus(elements.saveStatus, '🔄 기본 설정으로 복원되었습니다.', 'success');
+    showStatus(elements.saveStatus, `🔄 ${i18n.getMessage('settingsReset')}`, 'success');
 }
 
-// Test REST API connection
 async function testConnection() {
     elements.testConnection.disabled = true;
-    elements.testConnection.textContent = '🔄 연결 중...';
+    elements.testConnection.textContent = `🔄 ${i18n.getMessage('connecting')}`;
 
     try {
         await saveSettingsQuietly();
         const result = await chrome.runtime.sendMessage({ type: 'TEST_CONNECTION' });
-
         if (result.success) {
             showStatus(elements.connectionStatus, '✅ ' + result.message, 'success');
         } else {
             showStatus(elements.connectionStatus, '❌ ' + result.message, 'error');
         }
     } catch (error) {
-        showStatus(elements.connectionStatus, '❌ 연결 테스트 실패: ' + error.message, 'error');
+        showStatus(elements.connectionStatus, `❌ ${i18n.getMessage('errConnError', error.message)}`, 'error');
     }
 
     elements.testConnection.disabled = false;
-    elements.testConnection.textContent = '🔍 연결 테스트';
+    elements.testConnection.textContent = `🔍 ${i18n.getMessage('testConnection')}`;
 }
 
-// Show status message
 function showStatus(element, message, type) {
     element.textContent = message;
     element.className = `connection-status show ${type}`;
-
-    setTimeout(() => {
-        element.classList.remove('show');
-    }, 3000);
+    setTimeout(() => element.classList.remove('show'), 3000);
 }
 
-// Update image folder mode visibility based on year/month setting
+function clampInt(value, min, max, fallback) {
+    const n = parseInt(value, 10);
+    if (Number.isNaN(n)) return fallback;
+    return Math.max(min, Math.min(max, n));
+}
+
+function updateCommentOptionsVisibility() {
+    elements.commentOptions.style.display = elements.collectComments.checked ? 'block' : 'none';
+}
+
 function updateImageFolderModeVisibility() {
-    if (elements.useYearMonthFolders.checked) {
-        elements.imageFolderModeContainer.style.display = 'block';
-    } else {
-        elements.imageFolderModeContainer.style.display = 'none';
-    }
+    elements.imageFolderModeContainer.style.display = elements.useYearMonthFolders.checked ? 'block' : 'none';
 }
 
-// 저장 방식에 따른 UI 토글
 function updateSaveMethodVisibility() {
     const isRest = elements.saveMethod.value === 'rest';
     elements.restApiSettings.style.display = isRest ? 'block' : 'none';
     elements.uriSettings.style.display = isRest ? 'none' : 'block';
     elements.saveMethodHint.textContent = isRest
-        ? 'REST API: 이미지 로컬 저장 가능, Local REST API 플러그인 필요'
-        : 'URI: 클립보드 경유, 추가 플러그인 불필요, 이미지 로컬 저장 불가';
+        ? i18n.getMessage('saveMethodRestHint')
+        : i18n.getMessage('saveMethodUriHint');
 
-    // URI 모드: 볼트 선택 옵션 표시, 이미지 다운로드 비활성화
     elements.uriVaultModeContainer.style.display = isRest ? 'none' : 'block';
     if (!isRest) {
         elements.downloadImages.checked = false;
@@ -440,62 +446,45 @@ function updateSaveMethodVisibility() {
     }
 }
 
-// Event listeners
 elements.saveSettings.addEventListener('click', saveSettings);
 elements.resetSettings.addEventListener('click', resetSettings);
 elements.testConnection.addEventListener('click', testConnection);
-
-// 저장 방식 변경 핸들러
 elements.saveMethod.addEventListener('change', updateSaveMethodVisibility);
-
-// Year/month folder toggle handler
 elements.useYearMonthFolders.addEventListener('change', updateImageFolderModeVisibility);
+elements.collectComments.addEventListener('change', updateCommentOptionsVisibility);
 
-// Active provider change handler
 elements.aiActiveProvider.addEventListener('change', (e) => {
     updateActiveProviderCard(e.target.value);
 });
 
-// Reset prompt template handler
 elements.resetPromptTemplate.addEventListener('click', () => {
-    elements.aiPromptTemplate.value = DEFAULT_PROMPT_TEMPLATE;
-    showStatus(elements.saveStatus, '🔄 기본 템플릿으로 복원되었습니다.', 'success');
+    elements.aiPromptTemplate.value = getDefaultPromptTemplate();
+    showStatus(elements.saveStatus, `🔄 ${i18n.getMessage('templateReset')}`, 'success');
 });
 
-// Provider card toggle buttons
 document.querySelectorAll('.provider-toggle-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const provider = e.target.dataset.provider;
-        if (provider) {
-            toggleProviderCard(provider);
-        }
+        if (provider) toggleProviderCard(provider);
     });
 });
 
-// Provider card header click (entire header toggles)
 document.querySelectorAll('.provider-header').forEach(header => {
     header.addEventListener('click', (e) => {
-        // Don't toggle if clicking on the button itself (it has its own handler)
         if (e.target.classList.contains('provider-toggle-btn')) return;
         const card = header.closest('.provider-card');
         const provider = card?.dataset.provider;
-        if (provider) {
-            toggleProviderCard(provider);
-        }
+        if (provider) toggleProviderCard(provider);
     });
 });
 
-// Provider test connection buttons
 document.querySelectorAll('.test-provider-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         const provider = e.target.dataset.provider;
-        if (provider) {
-            testProviderConnection(provider);
-        }
+        if (provider) testProviderConnection(provider);
     });
 });
 
-// Toggle provider card function (used by event listeners)
 function toggleProviderCard(provider) {
     const body = document.getElementById(`body-${provider}`);
     const btn = document.querySelector(`.provider-card[data-provider="${provider}"] .provider-toggle-btn`);
@@ -509,10 +498,9 @@ function toggleProviderCard(provider) {
     }
 }
 
-// Test provider connection function
 async function testProviderConnection(provider) {
     const resultEl = document.getElementById(`result-${provider}`);
-    resultEl.textContent = '테스트 중...';
+    resultEl.textContent = i18n.getMessage('testing');
     resultEl.className = 'test-result';
 
     try {
@@ -523,25 +511,25 @@ async function testProviderConnection(provider) {
         const endpoint = document.getElementById(`endpoint-${provider}`)?.value.trim() || '';
 
         if (!apiKey) {
-            resultEl.textContent = '❌ API Key를 입력하세요';
+            resultEl.textContent = `❌ ${i18n.getMessage('enterApiKey')}`;
             resultEl.className = 'test-result error';
             return;
         }
 
         const result = await chrome.runtime.sendMessage({
             type: 'TEST_AI_CONNECTION',
-            provider: provider,
-            apiKey: apiKey,
-            model: model,
-            endpoint: endpoint
+            provider,
+            apiKey,
+            model,
+            endpoint
         });
 
         if (result.success) {
-            resultEl.textContent = '✅ 연결 성공';
+            resultEl.textContent = `✅ ${i18n.getMessage('connSuccess')}`;
             resultEl.className = 'test-result success';
             updateProviderStatus(provider, true);
         } else {
-            resultEl.textContent = '❌ ' + (result.message || '연결 실패');
+            resultEl.textContent = '❌ ' + (result.message || i18n.getMessage('connFailed'));
             resultEl.className = 'test-result error';
         }
     } catch (error) {
@@ -550,11 +538,15 @@ async function testProviderConnection(provider) {
     }
 }
 
-// Set version from manifest
 const versionEl = document.getElementById('versionText');
 if (versionEl) {
     versionEl.textContent = `v${chrome.runtime.getManifest().version}`;
 }
 
-// Initialize
-loadSettings();
+async function init() {
+    await i18n.init();
+    i18n.applyTranslations(document);
+    await loadSettings();
+}
+
+init();

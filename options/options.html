@@ -1,63 +1,79 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Threads to Obsidian - 설정</title>
+  <title data-i18n="optionsTitle">Threads to Obsidian Settings</title>
   <link rel="stylesheet" href="options.css">
 </head>
 
 <body>
   <div class="container">
     <header>
-      <h1>⚙️ Threads to Obsidian 설정</h1>
-      <p class="subtitle">Threads 게시글을 Obsidian에 저장하는 설정을 관리합니다.</p>
+      <h1>⚙️ <span data-i18n="optionsTitle">Threads to Obsidian Settings</span></h1>
+      <p class="subtitle" data-i18n="optionsSubtitle">Manage settings for saving Threads posts to Obsidian.</p>
     </header>
 
     <main>
+      <!-- Language Settings -->
+      <section class="settings-section">
+        <h2>🌐 <span data-i18n="languageSettings">Language</span></h2>
+        <p class="section-desc" data-i18n="languageDesc">Choose the display language for this extension.</p>
+
+        <div class="setting-item">
+          <label for="language" data-i18n="languageLabel">Display Language</label>
+          <select id="language">
+            <option value="auto" data-i18n="languageAuto">Auto (follow browser)</option>
+            <option value="en" data-i18n="languageEnglish">English</option>
+            <option value="ko" data-i18n="languageKorean">한국어</option>
+          </select>
+          <p class="setting-hint" data-i18n="languageHint">The page reloads after changing this.</p>
+        </div>
+      </section>
+
       <!-- Trigger Settings -->
       <section class="settings-section">
-        <h2>🎯 트리거 설정</h2>
-        <p class="section-desc">어떤 버튼을 클릭했을 때 저장할지 선택합니다.</p>
+        <h2>🎯 <span data-i18n="triggerSettings">Trigger Settings</span></h2>
+        <p class="section-desc" data-i18n="triggerDesc">Choose which actions trigger saving to Obsidian.</p>
 
         <div class="setting-item">
           <label class="toggle-label">
             <input type="checkbox" id="triggerOnLike" checked>
             <span class="toggle-slider"></span>
-            <span class="label-text">좋아요 클릭 시 저장</span>
+            <span class="label-text" data-i18n="triggerLike">Save on Like click</span>
           </label>
-          <p class="setting-hint">♡ → ❤️ 변경 시에만 저장됩니다.</p>
+          <p class="setting-hint" data-i18n="triggerLikeHint">Only saves when changing ♡ → ❤️.</p>
         </div>
 
         <div class="setting-item">
           <label class="toggle-label">
             <input type="checkbox" id="triggerOnSave" checked>
             <span class="toggle-slider"></span>
-            <span class="label-text">저장 클릭 시 저장</span>
+            <span class="label-text" data-i18n="triggerSave">Save on Bookmark click</span>
           </label>
-          <p class="setting-hint">북마크 활성화 시에만 저장됩니다.</p>
+          <p class="setting-hint" data-i18n="triggerSaveHint">Only saves when bookmark is activated.</p>
         </div>
       </section>
 
       <!-- Save Method Settings -->
       <section class="settings-section">
-        <h2>🔗 Obsidian 연결 설정</h2>
-        <p class="section-desc">Obsidian에 노트를 저장하는 방식을 선택합니다.</p>
+        <h2>🔗 <span data-i18n="saveMethodSettings">Obsidian Connection</span></h2>
+        <p class="section-desc" data-i18n="saveMethodDesc">Choose how notes are written to Obsidian.</p>
 
         <div class="setting-item">
-          <label for="saveMethod">저장 방식</label>
+          <label for="saveMethod" data-i18n="saveMethodLabel">Save Method</label>
           <select id="saveMethod">
-            <option value="rest">REST API (Local REST API 플러그인)</option>
-            <option value="uri">Obsidian URI (플러그인 불필요)</option>
+            <option value="rest" data-i18n="saveMethodRest">REST API (Local REST API plugin)</option>
+            <option value="uri" data-i18n="saveMethodUri">Obsidian URI (no plugin required)</option>
           </select>
-          <p class="setting-hint" id="saveMethodHint">REST API: 이미지 로컬 저장 가능, Local REST API 플러그인 필요</p>
+          <p class="setting-hint" id="saveMethodHint" data-i18n="saveMethodRestHint">REST API: supports local image download, requires Local REST API plugin.</p>
         </div>
 
         <!-- REST API Settings (shown when saveMethod=rest) -->
         <div id="restApiSettings">
           <div class="setting-item">
-            <label for="protocol">프로토콜</label>
+            <label for="protocol" data-i18n="protocol">Protocol</label>
             <select id="protocol">
               <option value="http">HTTP</option>
               <option value="https">HTTPS</option>
@@ -65,34 +81,34 @@
           </div>
 
           <div class="setting-item">
-            <label for="host">호스트</label>
+            <label for="host" data-i18n="host">Host</label>
             <input type="text" id="host" placeholder="localhost" value="localhost">
           </div>
 
           <div class="setting-item">
-            <label for="port">포트</label>
+            <label for="port" data-i18n="port">Port</label>
             <input type="text" id="port" placeholder="27123" value="27123">
           </div>
 
           <div class="setting-item">
-            <label for="apiKey">API Key (선택)</label>
-            <input type="password" id="apiKey" placeholder="API Key를 입력하세요">
-            <p class="setting-hint">REST API 플러그인에서 설정한 인증 토큰</p>
+            <label for="apiKey" data-i18n="apiKeyOptional">API Key (optional)</label>
+            <input type="password" id="apiKey" data-i18n-placeholder="apiKeyPlaceholder" placeholder="Enter API Key">
+            <p class="setting-hint" data-i18n="apiKeyHint">Authentication token from the REST API plugin</p>
           </div>
 
-          <button id="testConnection" class="btn btn-secondary">🔍 연결 테스트</button>
+          <button id="testConnection" class="btn btn-secondary">🔍 <span data-i18n="testConnection">Test Connection</span></button>
           <div id="connectionStatus" class="connection-status"></div>
         </div>
 
         <!-- URI Settings info (shown when saveMethod=uri) -->
         <div id="uriSettings" style="display: none;">
           <div class="setting-item info-box">
-            <p>📋 클립보드를 통해 <code>obsidian://new</code> URI로 노트를 생성합니다.</p>
+            <p data-i18n="uriInfoLead">📋 Notes are created via the obsidian://new URI through the clipboard.</p>
             <ul style="margin: 8px 0 0 16px; font-size: 13px; opacity: 0.8;">
-              <li>추가 플러그인 설치가 필요 없습니다</li>
-              <li>마지막 활성화된 Obsidian 볼트에 저장됩니다</li>
-              <li>⚠️ 이미지 로컬 다운로드는 지원되지 않습니다 (외부 URL 참조)</li>
-              <li>⚠️ 저장 시 클립보드 내용이 일시적으로 대체됩니다</li>
+              <li data-i18n="uriInfo1">No additional plugin is required.</li>
+              <li data-i18n="uriInfo2">Notes are saved to the last active Obsidian vault.</li>
+              <li data-i18n="uriInfo3">⚠️ Local image download is not supported (external URL references).</li>
+              <li data-i18n="uriInfo4">⚠️ Clipboard content is temporarily replaced during save.</li>
             </ul>
           </div>
         </div>
@@ -100,40 +116,40 @@
 
       <!-- AI Provider Settings -->
       <section class="settings-section">
-        <h2>🤖 AI 프로바이더 설정</h2>
-        <p class="section-desc">게시글 요약 및 변환에 사용할 AI 서비스를 설정합니다.</p>
+        <h2>🤖 <span data-i18n="aiProviderSettings">AI Provider Settings</span></h2>
+        <p class="section-desc" data-i18n="aiProviderDesc">Configure AI service for post summarization and transformation.</p>
 
         <div class="setting-item">
           <label class="toggle-label">
             <input type="checkbox" id="aiEnabled">
             <span class="toggle-slider"></span>
-            <span class="label-text">AI 변환 사용</span>
+            <span class="label-text" data-i18n="aiEnabled">Enable AI Transformation</span>
           </label>
-          <p class="setting-hint">비활성화 시 원본 그대로 저장됩니다.</p>
+          <p class="setting-hint" data-i18n="aiDisabledHint">When disabled, posts are saved as-is.</p>
         </div>
 
         <div class="setting-item">
-          <label for="aiActiveProvider">🎯 기본 AI 프로바이더</label>
+          <label for="aiActiveProvider" data-i18n="defaultProvider">🎯 Default AI Provider</label>
           <select id="aiActiveProvider">
             <option value="openai">OpenAI (GPT)</option>
             <option value="gemini">Google Gemini</option>
             <option value="anthropic">Anthropic (Claude)</option>
             <option value="grok">Grok (X.AI)</option>
             <option value="zai">zai (GLM)</option>
-            <option value="custom">직접 설정</option>
+            <option value="custom" data-i18n="customProvider">Custom</option>
           </select>
-          <p class="setting-hint">저장 시 사용할 AI 프로바이더를 선택합니다. 아래에서 각 프로바이더별 설정을 미리 해두세요.</p>
+          <p class="setting-hint" data-i18n="defaultProviderHint">Select the AI provider to use. Configure each provider below.</p>
         </div>
 
         <div class="setting-item">
-          <label for="aiMaxTokens">최대 출력 토큰</label>
+          <label for="aiMaxTokens" data-i18n="maxOutputTokens">Max Output Tokens</label>
           <input type="number" id="aiMaxTokens" min="1000" max="200000" step="1000" value="64000">
-          <p class="setting-hint">AI 응답의 최대 토큰 수 (기본: 64000)</p>
+          <p class="setting-hint" data-i18n="maxTokensHint">Maximum tokens for AI response (default: 64000)</p>
         </div>
 
         <!-- Provider Cards Container -->
         <div id="providerCardsContainer" style="margin-top: 20px;">
-          <h3 style="margin-bottom: 12px; font-size: 14px; color: #666;">📋 프로바이더별 API 설정 (펼쳐서 설정)</h3>
+          <h3 style="margin-bottom: 12px; font-size: 14px; color: #666;" data-i18n="providerApiSetup">📋 Provider API Settings (expand to configure)</h3>
 
           <!-- OpenAI -->
           <div class="provider-card" data-provider="openai">
@@ -149,11 +165,11 @@
                 <input type="password" id="apiKey-openai" placeholder="sk-...">
               </div>
               <div class="provider-field">
-                <label>모델</label>
+                <label data-i18n="model">Model</label>
                 <input type="text" id="model-openai" placeholder="gpt-4o">
               </div>
               <div class="provider-actions">
-                <button class="btn btn-sm test-provider-btn" data-provider="openai">🔍 연결 테스트</button>
+                <button class="btn btn-sm test-provider-btn" data-provider="openai">🔍 <span data-i18n="testConnection">Test Connection</span></button>
                 <span class="test-result" id="result-openai"></span>
               </div>
             </div>
@@ -173,11 +189,11 @@
                 <input type="password" id="apiKey-gemini" placeholder="AI...">
               </div>
               <div class="provider-field">
-                <label>모델</label>
+                <label data-i18n="model">Model</label>
                 <input type="text" id="model-gemini" placeholder="gemini-2.0-flash">
               </div>
               <div class="provider-actions">
-                <button class="btn btn-sm test-provider-btn" data-provider="gemini">🔍 연결 테스트</button>
+                <button class="btn btn-sm test-provider-btn" data-provider="gemini">🔍 <span data-i18n="testConnection">Test Connection</span></button>
                 <span class="test-result" id="result-gemini"></span>
               </div>
             </div>
@@ -197,11 +213,11 @@
                 <input type="password" id="apiKey-anthropic" placeholder="sk-ant-...">
               </div>
               <div class="provider-field">
-                <label>모델</label>
+                <label data-i18n="model">Model</label>
                 <input type="text" id="model-anthropic" placeholder="claude-3-5-sonnet-latest">
               </div>
               <div class="provider-actions">
-                <button class="btn btn-sm test-provider-btn" data-provider="anthropic">🔍 연결 테스트</button>
+                <button class="btn btn-sm test-provider-btn" data-provider="anthropic">🔍 <span data-i18n="testConnection">Test Connection</span></button>
                 <span class="test-result" id="result-anthropic"></span>
               </div>
             </div>
@@ -221,11 +237,11 @@
                 <input type="password" id="apiKey-grok" placeholder="xai-...">
               </div>
               <div class="provider-field">
-                <label>모델</label>
+                <label data-i18n="model">Model</label>
                 <input type="text" id="model-grok" placeholder="grok-3">
               </div>
               <div class="provider-actions">
-                <button class="btn btn-sm test-provider-btn" data-provider="grok">🔍 연결 테스트</button>
+                <button class="btn btn-sm test-provider-btn" data-provider="grok">🔍 <span data-i18n="testConnection">Test Connection</span></button>
                 <span class="test-result" id="result-grok"></span>
               </div>
             </div>
@@ -249,11 +265,11 @@
                 <input type="text" id="endpoint-zai" placeholder="https://api.z.ai/api/coding/paas/v4/chat/completions">
               </div>
               <div class="provider-field">
-                <label>모델</label>
+                <label data-i18n="model">Model</label>
                 <input type="text" id="model-zai" placeholder="GLM-4.5">
               </div>
               <div class="provider-actions">
-                <button class="btn btn-sm test-provider-btn" data-provider="zai">🔍 연결 테스트</button>
+                <button class="btn btn-sm test-provider-btn" data-provider="zai">🔍 <span data-i18n="testConnection">Test Connection</span></button>
                 <span class="test-result" id="result-zai"></span>
               </div>
             </div>
@@ -263,7 +279,7 @@
           <div class="provider-card" data-provider="custom">
             <div class="provider-header">
               <span class="provider-icon">⚙️</span>
-              <span class="provider-name">Custom (직접 설정)</span>
+              <span class="provider-name" data-i18n="customSelf">Custom</span>
               <span class="provider-status" id="status-custom"></span>
               <button class="provider-toggle-btn" data-provider="custom">▼</button>
             </div>
@@ -277,11 +293,11 @@
                 <input type="text" id="endpoint-custom" placeholder="https://api.example.com/v1/chat/completions">
               </div>
               <div class="provider-field">
-                <label>모델 이름</label>
+                <label data-i18n="modelName">Model Name</label>
                 <input type="text" id="model-custom" placeholder="gpt-4o">
               </div>
               <div class="provider-actions">
-                <button class="btn btn-sm test-provider-btn" data-provider="custom">🔍 연결 테스트</button>
+                <button class="btn btn-sm test-provider-btn" data-provider="custom">🔍 <span data-i18n="testConnection">Test Connection</span></button>
                 <span class="test-result" id="result-custom"></span>
               </div>
             </div>
@@ -289,100 +305,140 @@
         </div>
 
         <div class="setting-item" style="margin-top: 20px;">
-          <label for="aiPromptTemplate">변환 프롬프트 템플릿</label>
+          <label for="aiPromptTemplate" data-i18n="promptTemplate">Transformation Prompt Template</label>
           <textarea id="aiPromptTemplate" rows="15"
             style="width: 100%; font-family: monospace; font-size: 12px;"></textarea>
-          <p class="setting-hint">AI가 게시글을 변환할 때 사용하는 프롬프트입니다. {author}, {content} 변수를 사용할 수 있습니다.</p>
-          <button id="resetPromptTemplate" class="btn btn-secondary" style="margin-top: 8px;">🔄 기본 템플릿 복원</button>
+          <p class="setting-hint" data-i18n="promptHint">Prompt used for AI post transformation. Use {author} and {content} variables.</p>
+          <button id="resetPromptTemplate" class="btn btn-secondary" style="margin-top: 8px;" data-i18n="resetTemplate">🔄 Restore Default Template</button>
         </div>
       </section>
 
       <!-- Path Settings -->
       <section class="settings-section">
-        <h2>📁 저장 경로 설정</h2>
-        <p class="section-desc">Obsidian vault 내 저장 위치를 지정합니다.</p>
+        <h2>📁 <span data-i18n="pathSettings">Save Path Settings</span></h2>
+        <p class="section-desc" data-i18n="pathDesc">Specify save locations within the Obsidian vault.</p>
 
         <div class="setting-item">
-          <label for="vaultName">볼트 이름</label>
+          <label for="vaultName" data-i18n="vaultName">Vault Name</label>
           <input type="text" id="vaultName" placeholder="My Vault">
-          <p class="setting-hint" id="vaultNameHint">Obsidian 볼트 이름 (토스트 클릭으로 파일 열기에 필요)</p>
+          <p class="setting-hint" id="vaultNameHint" data-i18n="vaultHint">Obsidian vault name (required for click-to-open)</p>
         </div>
 
         <div class="setting-item" id="uriVaultModeContainer" style="display: none;">
-          <label for="uriVaultMode">URI 저장 대상 볼트</label>
+          <label for="uriVaultMode" data-i18n="uriVaultModeLabel">URI Target Vault</label>
           <select id="uriVaultMode">
-            <option value="specified">지정된 볼트에 저장 (위 볼트 이름 사용)</option>
-            <option value="lastActive">마지막 활성 볼트에 저장</option>
+            <option value="specified" data-i18n="uriVaultModeSpecified">Save to the specified vault (uses Vault Name above)</option>
+            <option value="lastActive" data-i18n="uriVaultModeLastActive">Save to last active vault</option>
           </select>
-          <p class="setting-hint">마지막 활성 볼트: Obsidian에서 가장 최근 열었던 볼트에 자동 저장</p>
+          <p class="setting-hint" data-i18n="uriVaultModeHint">Last active vault: automatically uses the Obsidian vault most recently opened.</p>
         </div>
 
         <div class="setting-item">
-          <label for="notesFolder">노트 저장 폴더</label>
+          <label for="notesFolder" data-i18n="notesFolder">Notes Folder</label>
           <input type="text" id="notesFolder" placeholder="Threads" value="Threads">
-          <p class="setting-hint">Obsidian vault 최상위 기준 경로</p>
+          <p class="setting-hint" data-i18n="notesFolderHint">Path relative to vault root</p>
         </div>
 
         <div class="setting-item">
           <label class="toggle-label">
             <input type="checkbox" id="useYearMonthFolders">
             <span class="toggle-slider"></span>
-            <span class="label-text">년도/월 폴더로 구분</span>
+            <span class="label-text" data-i18n="yearMonthFolders">Organize by Year/Month folders</span>
           </label>
-          <p class="setting-hint">활성화 시 Threads/2026/01/ 형식으로 저장</p>
+          <p class="setting-hint" data-i18n="yearMonthHint">Saves in Threads/2026/01/ format when enabled</p>
         </div>
 
         <div class="setting-item">
-          <label for="imageFolder">이미지 저장 폴더</label>
+          <label for="imageFolder" data-i18n="imageFolder">Image Folder</label>
           <input type="text" id="imageFolder" placeholder="Threads_img" value="Threads_img">
-          <p class="setting-hint">이미지를 저장할 폴더 (노트 폴더와 같은 레벨)</p>
+          <p class="setting-hint" data-i18n="imageFolderHint">Folder for downloaded images (same level as notes folder)</p>
         </div>
 
         <div class="setting-item" id="imageFolderModeContainer" style="display: none;">
-          <label for="imageFolderMode">이미지 저장 방식</label>
+          <label for="imageFolderMode" data-i18n="imageFolderMode">Image Save Mode</label>
           <select id="imageFolderMode">
-            <option value="fixed">고정 폴더 사용 (위 설정값)</option>
-            <option value="relative">노트 폴더 연동 (년도/월_img)</option>
+            <option value="fixed" data-i18n="imageModeFixed">Use fixed folder (above setting)</option>
+            <option value="relative" data-i18n="imageModeRelative">Relative to notes folder (year/month_img)</option>
           </select>
-          <p class="setting-hint">연동 시 노트와 같은 위치에 _img 폴더 생성</p>
+          <p class="setting-hint" data-i18n="imageModeHint">Creates _img folder alongside notes when relative</p>
         </div>
       </section>
 
       <!-- File Naming Settings -->
       <section class="settings-section">
-        <h2>📝 파일명 및 미디어 설정</h2>
+        <h2>📝 <span data-i18n="fileNamingSettings">Filename & Media Settings</span></h2>
 
         <div class="setting-item">
-          <label for="fileNameType">파일명 기준</label>
+          <label for="fileNameType" data-i18n="fileNameBasis">Filename Basis</label>
           <select id="fileNameType">
-            <option value="postDate">게시글 등록일</option>
-            <option value="saveDate">저장일</option>
+            <option value="postDate" data-i18n="nameByPostDate">Post Date</option>
+            <option value="saveDate" data-i18n="nameBySaveDate">Save Date</option>
           </select>
-          <p class="setting-hint">형식: @작성자_YYYYMMDD_HHmm.md</p>
+          <p class="setting-hint" data-i18n="nameFormatHint">Format: @author_YYYYMMDD_HHmm.md</p>
         </div>
 
         <div class="setting-item">
           <label class="toggle-label">
             <input type="checkbox" id="downloadImages" checked>
             <span class="toggle-slider"></span>
-            <span class="label-text">이미지 로컬 다운로드</span>
+            <span class="label-text" data-i18n="downloadImages">Download Images Locally</span>
           </label>
-          <p class="setting-hint">비활성화 시 URL 링크만 저장</p>
+          <p class="setting-hint" data-i18n="downloadImagesHint">When disabled, only URL links are saved</p>
         </div>
 
         <div class="setting-item">
           <label class="toggle-label">
             <input type="checkbox" id="showNotification" checked>
             <span class="toggle-slider"></span>
-            <span class="label-text">저장 완료 알림 표시</span>
+            <span class="label-text" data-i18n="showNotification">Show Save Notification</span>
           </label>
+        </div>
+      </section>
+
+      <!-- Comment Collection Settings -->
+      <section class="settings-section">
+        <h2 data-i18n="commentsSection">💬 Comment Collection</h2>
+        <p class="section-desc" data-i18n="commentsDesc">Decide whether to save replies under each post.</p>
+
+        <div class="setting-item">
+          <label class="toggle-label">
+            <input type="checkbox" id="collectComments">
+            <span class="toggle-slider"></span>
+            <span class="label-text" data-i18n="commentsToggle">Enable comment collection</span>
+          </label>
+          <p class="setting-hint" data-i18n="commentsToggleHint">
+            ⚠️ The feed rarely renders comments. Like or bookmark from a post's detail page for best results.
+          </p>
+        </div>
+
+        <div id="commentOptions" style="display: none;">
+          <div class="setting-item">
+            <label for="commentMaxCount" data-i18n="commentMaxCountLabel">Maximum count</label>
+            <input type="number" id="commentMaxCount" min="1" max="100" step="1" value="20">
+            <p class="setting-hint" data-i18n="commentMaxCountHint">Up to N visible comments per post (1 to 100)</p>
+          </div>
+
+          <div class="setting-item">
+            <label for="commentScope" data-i18n="commentScopeLabel">Scope</label>
+            <select id="commentScope">
+              <option value="all" data-i18n="commentScopeAll">All comments</option>
+              <option value="authorOnly" data-i18n="commentScopeAuthor">Author replies only</option>
+            </select>
+            <p class="setting-hint" data-i18n="commentScopeHint">Author replies only: filters out noise and keeps the post author's own replies.</p>
+          </div>
+
+          <div class="setting-item">
+            <label for="commentMinLength" data-i18n="commentMinLengthLabel">Minimum length</label>
+            <input type="number" id="commentMinLength" min="0" max="500" step="1" value="0">
+            <p class="setting-hint" data-i18n="commentMinLengthHint">Filter out short noise comments (0 = no limit)</p>
+          </div>
         </div>
       </section>
 
       <!-- Save Button -->
       <div class="button-group">
-        <button id="saveSettings" class="btn btn-primary">💾 설정 저장</button>
-        <button id="resetSettings" class="btn btn-secondary">🔄 기본값 복원</button>
+        <button id="saveSettings" class="btn btn-primary" data-i18n="saveBtn">💾 Save Settings</button>
+        <button id="resetSettings" class="btn btn-secondary" data-i18n="resetBtn">🔄 Restore Defaults</button>
       </div>
 
       <div id="saveStatus" class="save-status"></div>
@@ -393,6 +449,7 @@
     </footer>
   </div>
 
+  <script src="../shared/i18n.js"></script>
   <script src="options.js"></script>
 </body>
 

@@ -33,6 +33,8 @@
     // Initialize
     async function init() {
 
+        await i18n.init();
+
         try {
             settings = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
         } catch (error) {
@@ -44,7 +46,11 @@
                 downloadImages: false,
                 notesFolder: 'Threads',
                 imageFolder: 'Threads_img',
-                fileNameType: 'postDate'
+                fileNameType: 'postDate',
+                collectComments: false,
+                commentMaxCount: 20,
+                commentScope: 'all',
+                commentMinLength: 0
             };
         }
 
@@ -86,7 +92,7 @@
             const titleEl = toast.querySelector('.toast-title');
             const subtitleEl = toast.querySelector('.toast-subtitle');
             if (titleEl) titleEl.textContent = stageText;
-            if (subtitleEl) subtitleEl.textContent = `${provider}/${model} • ${elapsed}초`;
+            if (subtitleEl) subtitleEl.textContent = `${provider}/${model} • ${elapsed}${i18n.getMessage('secondsUnit')}`;
         }
     }
 
@@ -103,7 +109,7 @@
                 const currentText = subtitleEl.textContent;
                 const parts = currentText.split(' • ');
                 if (parts.length >= 1) {
-                    subtitleEl.textContent = `${parts[0]} • ${elapsed}초`;
+                    subtitleEl.textContent = `${parts[0]} • ${elapsed}${i18n.getMessage('secondsUnit')}`;
                 }
             }
         }
@@ -112,10 +118,10 @@
     // Get readable stage text
     function getStageText(stage) {
         switch (stage) {
-            case 'title': return '📝 제목 생성 중...';
-            case 'content': return '📄 본문 변환 중...';
-            case 'saving': return '💾 저장 중...';
-            default: return '⏳ 처리 중...';
+            case 'title': return `📝 ${i18n.getMessage('stageTitle')}`;
+            case 'content': return `📄 ${i18n.getMessage('stageContent')}`;
+            case 'saving': return `💾 ${i18n.getMessage('stageSaving')}`;
+            default: return `⏳ ${i18n.getMessage('stageProcessing')}`;
         }
     }
 
@@ -224,7 +230,7 @@
                 // On feed, try to find the post from the menu context
                 // The menu is often a sibling or near the post container
                 // For now, show a message that feed save is not yet supported
-                showToast('ℹ️ 상세 페이지에서 저장 버튼을 사용해주세요.');
+                showToast('ℹ️ ' + i18n.getMessage('toastDetailPage'));
             }
         }, 200);
     }
@@ -374,7 +380,7 @@
             // Check if extension context is still valid
             if (!chrome.runtime?.id) {
                 console.error('Threads to Obsidian: Extension context invalidated, please reload the page');
-                showToast('⚠️ 확장 프로그램이 갱신되었습니다. 페이지를 새로고침해주세요.');
+                showToast('⚠️ ' + i18n.getMessage('toastExtReload'));
                 return;
             }
 
@@ -394,7 +400,7 @@
 
                     showToast('', {
                         isProcessing: true,
-                        stage: '⏳ AI 처리 시작...',
+                        stage: '⏳ ' + i18n.getMessage('toastAiStart'),
                         model: `${settings.aiProvider}/${settings.aiModel}`,
                         elapsed: 0,
                         postId,
@@ -445,7 +451,7 @@
                     }
 
                     if (!clipboardOk) {
-                        showToast('❌ 클립보드 복사 실패. 브라우저 권한을 확인해주세요.');
+                        showToast('❌ ' + i18n.getMessage('toastClipboardFail'));
                         return;
                     }
 
@@ -465,7 +471,7 @@
                     // _blank 사용: _self는 현재 페이지를 떠나 content script가 죽음
                     window.open(obsidianUri, '_blank');
 
-                    const aiInfo = result.aiUsed ? ' (AI 변환)' : (result.failureReason ? ' (원본 저장)' : '');
+                    const aiInfo = result.aiUsed ? i18n.getMessage('aiUsedLabel') : (result.failureReason ? i18n.getMessage('originalSavedLabel') : '');
                     showToast('✅ Saved to Obsidian via URI' + aiInfo, {
                         isSuccess: true,
                         filePath: result.filePath,
@@ -489,7 +495,7 @@
 
                     showToast('', {
                         isProcessing: true,
-                        stage: '⏳ AI 처리 시작...',
+                        stage: '⏳ ' + i18n.getMessage('toastAiStart'),
                         model: `${settings.aiProvider}/${settings.aiModel}`,
                         elapsed: 0,
                         postId,
@@ -527,7 +533,7 @@
                 }
 
                 if (result && result.success) {
-                    const aiInfo = result.aiUsed ? ' (AI 변환)' : (result.failureReason ? ' (원본 저장)' : '');
+                    const aiInfo = result.aiUsed ? i18n.getMessage('aiUsedLabel') : (result.failureReason ? i18n.getMessage('originalSavedLabel') : '');
                     showToast('✅ Saved to Obsidian' + aiInfo, {
                         isSuccess: true,
                         filePath: result.path,
@@ -538,7 +544,7 @@
                     });
 
                     if (settings.aiEnabled && !result.aiUsed && result.failureReason) {
-                        console.warn('[Threads to Obsidian] 원본으로 저장됨. 이유:', result.failureReason);
+                        console.warn('[Threads to Obsidian] Saved as original. Reason:', result.failureReason);
                     }
                 } else {
                     showToast('❌ Failed to save: ' + (result?.error || 'Unknown error'));
@@ -553,10 +559,10 @@
             // Specific handling for extension context invalidated
             if (error.message.includes('Extension context invalidated') ||
                 error.message.includes('Receiving end does not exist')) {
-                showToast('⚠️ 확장 프로그램이 갱신되었습니다. 페이지를 새로고침하세요.');
+                showToast('⚠️ ' + i18n.getMessage('toastExtReload'));
             } else if (error.message.includes('message channel closed')) {
                 // AI processing timeout - may have still succeeded
-                showToast('⏳ AI 처리가 지연되고 있습니다. Obsidian에서 확인해주세요.');
+                showToast('⏳ ' + i18n.getMessage('toastAiDelay'));
             } else {
                 showToast('❌ Error: ' + error.message);
             }
@@ -603,6 +609,13 @@
             // If it's a repost, extract reposter info
             if (data.type === 'repost') {
                 data.reposter = extractReposter(postElement);
+            }
+
+            // Collect comments if enabled
+            if (settings?.collectComments) {
+                data.comments = extractComments(postElement, data.author.username, data.chainedPosts);
+            } else {
+                data.comments = [];
             }
 
             return data;
@@ -1104,6 +1117,69 @@
         return null;
     }
 
+    // Extract comments from post detail page (best-effort on feed)
+    // 같은 작성자 + 스레드 인디케이터 글은 본문 스레드이므로 제외하고,
+    // 그 외의 모든 게시 노드를 댓글 후보로 수집한다.
+    function extractComments(element, authorUsername, chainedPosts) {
+        const comments = [];
+        const isDetailPage = window.location.pathname.includes('/post/');
+        if (!isDetailPage) {
+            // 피드 뷰: 댓글 DOM이 거의 없음. 빈 배열 반환 (옵션 안내는 토스트로 별도)
+            return comments;
+        }
+
+        const maxCount = Math.max(1, Math.min(100, parseInt(settings.commentMaxCount, 10) || 20));
+        const minLength = Math.max(0, parseInt(settings.commentMinLength, 10) || 0);
+        const scope = settings.commentScope || 'all';
+
+        // 본문 스레드에서 이미 수집한 텍스트는 댓글에서 제외 (중복 방지)
+        const chainedTexts = new Set((chainedPosts || []).map(p => (p.text || '').trim()).filter(Boolean));
+
+        const allPosts = Array.from(document.querySelectorAll('div[data-pressable-container="true"]'));
+        let foundCurrentPost = false;
+
+        for (const post of allPosts) {
+            if (post === element) {
+                foundCurrentPost = true;
+                continue;
+            }
+            if (!foundCurrentPost) continue;
+            if (comments.length >= maxCount) break;
+
+            const postAuthorLink = post.querySelector('a[href^="/@"]');
+            if (!postAuthorLink) continue;
+
+            const postAuthor = '@' + postAuthorLink.getAttribute('href').replace('/@', '').split('/')[0];
+            const postText = post.innerText || '';
+            const hasThreadIndicator = /\d+\s*\/\s*\d+/.test(postText);
+
+            // 본문 스레드(작성자 + p/n 인디케이터)는 댓글이 아님 → 스킵
+            if (postAuthor === authorUsername && hasThreadIndicator) continue;
+
+            // 작성자 답글만 모드: 다른 사용자 댓글 제외
+            if (scope === 'authorOnly' && postAuthor !== authorUsername) continue;
+
+            const text = extractText(post);
+            if (!text || text.length < Math.max(2, minLength)) continue;
+
+            // 본문 스레드와 동일 텍스트는 중복으로 간주
+            if (chainedTexts.has(text.trim())) continue;
+
+            const commentAuthor = extractAuthor(post);
+            const url = extractPostUrl(post);
+            const timestamp = extractTimestamp(post);
+
+            comments.push({
+                author: commentAuthor,
+                text,
+                timestamp,
+                url
+            });
+        }
+
+        return comments;
+    }
+
     // Convert post data to markdown
     function convertToMarkdown(postData) {
         const now = new Date();
@@ -1123,7 +1199,7 @@
         };
 
         const savedDate = formatSeoulDate(now);
-        const postDate = postData.timestamp ? formatSeoulDate(postData.timestamp) : '알 수 없음';
+        const postDate = postData.timestamp ? formatSeoulDate(postData.timestamp) : i18n.getMessage('mdUnknown');
 
         // Frontmatter (for Obsidian properties)
         let md = '---\n';
@@ -1140,6 +1216,10 @@
 
         if (postData.type === 'thread' && postData.chainedPosts.length > 0) {
             md += `thread_count: ${postData.chainedPosts.length + 1}\n`;
+        }
+
+        if (postData.comments && postData.comments.length > 0) {
+            md += `comment_count: ${postData.comments.length}\n`;
         }
 
         if (postData.type === 'repost' && postData.reposter) {
@@ -1160,43 +1240,43 @@
 
         // Title
         if (postData.type === 'repost') {
-            md += `# 리포스트 by ${postData.reposter?.username || 'unknown'}\n\n`;
+            md += `# ${i18n.getMessage('mdRepostBy', postData.reposter?.username || 'unknown')}\n\n`;
         } else if (postData.type === 'quote') {
-            md += `# ${postData.author.username}의 인용\n\n`;
+            md += `# ${i18n.getMessage('mdQuoteBy', postData.author.username)}\n\n`;
         } else if (postData.type === 'thread') {
-            md += `# ${postData.author.username}의 스레드 (${postData.chainedPosts.length + 1}개 글)\n\n`;
+            md += `# ${i18n.getMessage('mdThreadBy', postData.author.username, postData.chainedPosts.length + 1)}\n\n`;
         } else {
-            md += `# ${postData.author.username}의 게시글\n\n`;
+            md += `# ${i18n.getMessage('mdPostBy', postData.author.username)}\n\n`;
         }
 
         // Post Info Section (visible when shared)
-        md += '## 📋 게시글 정보\n\n';
-        md += `| 항목 | 내용 |\n`;
+        md += `## 📋 ${i18n.getMessage('mdPostInfo')}\n\n`;
+        md += `| ${i18n.getMessage('mdItem')} | ${i18n.getMessage('mdValue')} |\n`;
         md += `|------|------|\n`;
-        md += `| 게시자 | [${postData.author.displayName} (${postData.author.username})](${postData.author.profileUrl}) |\n`;
-        md += `| 게시URL | [Threads에서 보기](${postData.url}) |\n`;
-        md += `| 게시일 | ${postDate} |\n`;
-        md += `| 저장일 | ${savedDate} |\n`;
+        md += `| ${i18n.getMessage('mdAuthor')} | [${postData.author.displayName} (${postData.author.username})](${postData.author.profileUrl}) |\n`;
+        md += `| ${i18n.getMessage('mdPostUrl')} | [${i18n.getMessage('mdViewOnThreads')}](${postData.url}) |\n`;
+        md += `| ${i18n.getMessage('mdPostDate')} | ${postDate} |\n`;
+        md += `| ${i18n.getMessage('mdSavedDate')} | ${savedDate} |\n`;
 
         if (postData.content.tag) {
-            md += `| 태그 | #${postData.content.tag.replace(/^#/, '')} |\n`;
+            md += `| ${i18n.getMessage('mdTag')} | #${postData.content.tag.replace(/^#/, '')} |\n`;
         }
 
         if (postData.type === 'repost' && postData.reposter) {
-            md += `| 리포스터 | ${postData.reposter.username} |\n`;
+            md += `| ${i18n.getMessage('mdReposter')} | ${postData.reposter.username} |\n`;
         }
 
         md += '\n---\n\n';
 
         // Main content
-        md += '## 📝 본문\n\n';
+        md += `## 📝 ${i18n.getMessage('mdMainContent')}\n\n`;
         if (postData.content.text) {
             md += `> ${postData.content.text.replace(/\n/g, '\n> ')}\n\n`;
         }
 
         // Media
         if (postData.content.media.length > 0) {
-            md += '## 🖼️ 미디어\n\n';
+            md += `## 🖼️ ${i18n.getMessage('mdMedia')}\n\n`;
             let imageIndex = 0;
             postData.content.media.forEach((media) => {
                 if (media.type === 'image') {
@@ -1207,10 +1287,10 @@
                         const localPath = `${imageFolderPath}/${generateFilename(postData).replace('.md', '')}_${imageIndex}.jpg`;
                         md += `![[${localPath}]]\n\n`;
                     } else {
-                        md += `![이미지 ${imageIndex}](${media.url})\n\n`;
+                        md += `![${i18n.getMessage('mdImageAlt')} ${imageIndex}](${media.url})\n\n`;
                     }
                 } else if (media.type === 'video') {
-                    md += `[🎬 동영상 링크](${media.url})\n\n`;
+                    md += `[${i18n.getMessage('mdVideoLink')}](${media.url})\n\n`;
                 }
             });
         }
@@ -1234,7 +1314,7 @@
                                 const chainImagePath = `${imageFolderPath}/${generateFilename(postData).replace('.md', '')}_p${i + 2}_${chainImageIndex}.jpg`;
                                 md += `![[${chainImagePath}]]\n\n`;
                             } else {
-                                md += `![첨부 이미지](${media.url})\n\n`;
+                                md += `![${i18n.getMessage('mdImageAttached')}](${media.url})\n\n`;
                             }
                         }
                     });
@@ -1244,10 +1324,28 @@
 
         // Quoted post
         if (postData.type === 'quote' && postData.quotedPost) {
-            md += `## 💬 인용된 원본 (${postData.quotedPost.author.username})\n\n`;
+            md += `## 💬 ${i18n.getMessage('mdQuotedOriginal')} (${postData.quotedPost.author.username})\n\n`;
             if (postData.quotedPost.content.text) {
                 md += `> ${postData.quotedPost.content.text.replace(/\n/g, '\n> ')}\n\n`;
             }
+        }
+
+        // Comments
+        if (postData.comments && postData.comments.length > 0) {
+            md += `## ${i18n.getMessage('mdComments', postData.comments.length)}\n\n`;
+            postData.comments.forEach((c) => {
+                const handle = c.author?.username || '@unknown';
+                const name = c.author?.displayName ? ` (${c.author.displayName})` : '';
+                const ts = c.timestamp ? formatSeoulDate(new Date(c.timestamp)) : '';
+                md += `### ${handle}${name}${ts ? ' — ' + ts : ''}\n`;
+                if (c.text) {
+                    md += `> ${c.text.replace(/\n/g, '\n> ')}\n`;
+                }
+                if (c.url) {
+                    md += `\n[${i18n.getMessage('mdCommentSource')}](${c.url})\n`;
+                }
+                md += '\n';
+            });
         }
 
         return md;
@@ -1331,10 +1429,10 @@
         if (isProcessing) {
             // Processing toast with spinner - stays visible until replaced
             const { stage, model, elapsed } = options;
-            const stageText = stage || 'AI 변환 중...';
+            const stageText = stage || i18n.getMessage('stageContent');
             const modelText = model || '';
-            const elapsedText = elapsed !== undefined ? `${elapsed}초` : '';
-            const subtitleParts = [modelText, elapsedText].filter(Boolean).join(' • ') || '잠시 기다려주세요';
+            const elapsedText = elapsed !== undefined ? `${elapsed}${i18n.getMessage('secondsUnit')}` : '';
+            const subtitleParts = [modelText, elapsedText].filter(Boolean).join(' • ') || i18n.getMessage('waitMoment');
 
             const icon = document.createElement('span');
             icon.className = 'toast-icon toast-spinner';
@@ -1377,11 +1475,11 @@
             const title = document.createElement('div');
             title.className = 'toast-title';
             title.textContent = imageErrors.length > 0
-                ? `Obsidian에 저장됨 (이미지 ${imageErrors.length}개 실패)`
-                : 'Obsidian에 저장됨';
+                ? i18n.getMessage('toastSavedImgFail', imageErrors.length)
+                : i18n.getMessage('toastSaved');
             const subtitle = document.createElement('div');
             subtitle.className = 'toast-subtitle';
-            subtitle.textContent = hasVault ? '클릭하여 열기' : '설정에서 볼트 이름을 입력하세요';
+            subtitle.textContent = hasVault ? i18n.getMessage('toastClickToOpen') : i18n.getMessage('toastSetVault');
             content.appendChild(title);
             content.appendChild(subtitle);
             toast.appendChild(icon);
