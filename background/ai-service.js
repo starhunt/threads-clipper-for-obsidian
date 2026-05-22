@@ -20,7 +20,9 @@ const AI_ENDPOINTS = {
 async function callAI(prompt, settings) {
     const { aiProvider, aiApiKey, aiEndpoint, aiModel, aiMaxTokens = 64000 } = settings;
 
-    if (!aiApiKey) {
+    // Custom/Local endpoints may not require auth (e.g. self-hosted Ollama, LM Studio).
+    // Other providers always need a key.
+    if (!aiApiKey && aiProvider !== 'custom') {
         throw new Error(_t('errApiKeyMissing'));
     }
 
@@ -45,12 +47,12 @@ async function callAI(prompt, settings) {
 }
 
 async function callOpenAICompatible(prompt, apiKey, endpoint, model, maxTokens, _providerTag) {
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
     const response = await aiFetchWithTimeout(endpoint, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
+        headers,
         body: JSON.stringify({
             model,
             messages: [{ role: 'user', content: prompt }],

@@ -657,13 +657,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'TEST_AI_CONNECTION') {
-    getSettings().then(settings => {
-      if (self.aiService) {
-        self.aiService.testAIConnection(settings).then(result => sendResponse(result));
-      } else {
-        sendResponse({ success: false, message: self.i18n.getMessage('errAiServiceLoad') });
+    (async () => {
+      try {
+        const stored = await getSettings();
+        // Override with values from the message so the test reflects exactly what the user typed
+        // (provider card may not be the active provider yet, and key/model may differ from saved).
+        const testSettings = {
+          ...stored,
+          aiProvider: message.provider || stored.aiProvider,
+          aiApiKey: (message.apiKey !== undefined ? message.apiKey : stored.aiApiKey) || stored.aiApiKey,
+          aiModel: message.model || stored.aiModel,
+          aiEndpoint: message.endpoint || stored.aiEndpoint
+        };
+        if (!self.aiService) {
+          sendResponse({ success: false, message: self.i18n.getMessage('errAiServiceLoad') });
+          return;
+        }
+        const result = await self.aiService.testAIConnection(testSettings);
+        sendResponse(result);
+      } catch (error) {
+        sendResponse({ success: false, message: error.message });
       }
-    });
+    })();
     return true;
   }
 });

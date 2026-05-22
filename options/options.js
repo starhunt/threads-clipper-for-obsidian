@@ -215,15 +215,36 @@ function initializeProviderModels() {
     // All providers use text input — no initialization needed.
 }
 
+// Bump SCHEMA_VERSION whenever new defaults should be force-applied to existing installs.
+const SCHEMA_VERSION = 2;
+
+async function migrateSettings(stored) {
+    // Pre-schema installs (v1.5.1 and earlier) saved settings without schemaVersion.
+    // Apply the new defaults for saveMethod and useYearMonthFolders one time so existing users
+    // see the v1.5.2+ defaults; subsequent user edits are preserved on later loads.
+    const current = stored.settings || {};
+    if ((current.schemaVersion || 0) >= SCHEMA_VERSION) return current;
+
+    const migrated = {
+        ...current,
+        saveMethod: DEFAULT_SETTINGS.saveMethod,
+        useYearMonthFolders: DEFAULT_SETTINGS.useYearMonthFolders,
+        schemaVersion: SCHEMA_VERSION
+    };
+    await chrome.storage.sync.set({ settings: migrated });
+    return migrated;
+}
+
 async function loadSettings() {
     const stored = await chrome.storage.sync.get('settings');
-    const settings = { ...DEFAULT_SETTINGS, ...stored.settings };
+    const migrated = await migrateSettings(stored);
+    const settings = { ...DEFAULT_SETTINGS, ...migrated };
     const providerSettings = { ...DEFAULT_SETTINGS.providerSettings, ...(settings.providerSettings || {}) };
 
     elements.language.value = settings.language || 'auto';
     elements.triggerOnLike.checked = settings.triggerOnLike;
     elements.triggerOnSave.checked = settings.triggerOnSave;
-    elements.saveMethod.value = settings.saveMethod || 'rest';
+    elements.saveMethod.value = settings.saveMethod || 'uri';
     elements.uriVaultMode.value = settings.uriVaultMode || 'specified';
     updateSaveMethodVisibility();
     elements.protocol.value = settings.protocol;
@@ -303,6 +324,7 @@ function buildSettingsObject() {
 
     return {
         settings: {
+            schemaVersion: SCHEMA_VERSION,
             language: elements.language.value,
             triggerOnLike: elements.triggerOnLike.checked,
             triggerOnSave: elements.triggerOnSave.checked,
@@ -453,10 +475,23 @@ elements.language.addEventListener('change', async () => {
     const lang = elements.language.value;
     const stored = await chrome.storage.sync.get('settings');
     const merged = { ...DEFAULT_SETTINGS, ...stored.settings, language: lang };
-    await chrome.storage.sync.set({ settings: merged });
+
+    // i18n.init must run before we read getDefaultPromptTemplate(), since the helper depends on
+    // i18n.getCurrentLanguage().
     await i18n.init(lang);
+
+    // If the prompt template still matches one of the shipped defaults, swap it to the new
+    // language's default. A customized template is preserved as-is.
+    const currentTpl = elements.aiPromptTemplate.value;
+    if (currentTpl === DEFAULT_PROMPT_TEMPLATE_EN || currentTpl === DEFAULT_PROMPT_TEMPLATE_KO) {
+        const swapped = getDefaultPromptTemplate();
+        elements.aiPromptTemplate.value = swapped;
+        merged.aiPromptTemplate = swapped;
+    }
+
+    await chrome.storage.sync.set({ settings: merged });
     i18n.applyTranslations(document);
-    // Refresh dynamic strings that depend on save method state
+    // Refresh dynamic strings that depend on save-method state (hint text).
     updateSaveMethodVisibility();
     showStatus(elements.saveStatus, `✅ ${i18n.getMessage('settingsSaved')}`, 'success');
 });
@@ -472,7 +507,8 @@ elements.resetPromptTemplate.addEventListener('click', () => {
 
 document.querySelectorAll('.provider-toggle-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        const provider = e.target.dataset.provider;
+        // Use currentTarget so clicks on inner elements (e.g. icon glyphs) still resolve the button.
+        const provider = e.currentTarget.dataset.provider;
         if (provider) toggleProviderCard(provider);
     });
 });
@@ -480,7 +516,7 @@ document.querySelectorAll('.provider-toggle-btn').forEach(btn => {
 document.querySelectorAll('.provider-header').forEach(header => {
     header.addEventListener('click', (e) => {
         if (e.target.classList.contains('provider-toggle-btn')) return;
-        const card = header.closest('.provider-card');
+        const card = e.currentTarget.closest('.provider-card');
         const provider = card?.dataset.provider;
         if (provider) toggleProviderCard(provider);
     });
@@ -488,7 +524,8 @@ document.querySelectorAll('.provider-header').forEach(header => {
 
 document.querySelectorAll('.test-provider-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        const provider = e.target.dataset.provider;
+        // The button contains a <span> child; e.target may be the span, so resolve via currentTarget.
+        const provider = e.currentTarget.dataset.provider;
         if (provider) testProviderConnection(provider);
     });
 });
@@ -518,8 +555,14 @@ async function testProviderConnection(provider) {
         const model = document.getElementById(`model-${provider}`)?.value.trim();
         const endpoint = document.getElementById(`endpoint-${provider}`)?.value.trim() || '';
 
-        if (!apiKey) {
+        // Custom/Local endpoints may run without a key (self-hosted Ollama, LM Studio, etc.).
+        if (!apiKey && provider !== 'custom') {
             resultEl.textContent = `❌ ${i18n.getMessage('enterApiKey')}`;
+            resultEl.className = 'test-result error';
+            return;
+        }
+        if (provider === 'custom' && !endpoint) {
+            resultEl.textContent = `❌ ${i18n.getMessage('errCustomEndpoint')}`;
             resultEl.className = 'test-result error';
             return;
         }

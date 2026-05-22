@@ -136,7 +136,7 @@
             <option value="anthropic">Anthropic (Claude)</option>
             <option value="grok">Grok (X.AI)</option>
             <option value="zai">zai (GLM)</option>
-            <option value="custom" data-i18n="customProvider">Custom</option>
+            <option value="custom" data-i18n="customProvider">Custom/Local</option>
           </select>
           <p class="setting-hint" data-i18n="defaultProviderHint">Select the AI provider to use. Configure each provider below.</p>
         </div>
@@ -279,7 +279,7 @@
           <div class="provider-card" data-provider="custom">
             <div class="provider-header">
               <span class="provider-icon">⚙️</span>
-              <span class="provider-name" data-i18n="customSelf">Custom</span>
+              <span class="provider-name" data-i18n="customSelf">Custom/Local</span>
               <span class="provider-status" id="status-custom"></span>
               <button class="provider-toggle-btn" data-provider="custom">▼</button>
             </div>
@@ -287,6 +287,7 @@
               <div class="provider-field">
                 <label>API Key</label>
                 <input type="password" id="apiKey-custom" placeholder="API Key">
+                <p class="setting-hint" data-i18n="customApiKeyHint">API key (omit for local endpoints)</p>
               </div>
               <div class="provider-field">
                 <label>Endpoint</label>
