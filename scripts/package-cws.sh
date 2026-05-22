@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_DIR="$ROOT_DIR/release"
 VERSION=$(node -e 'console.log(require(process.argv[1]).version)' "$ROOT_DIR/manifest.json")
-OUT_ZIP="$OUT_DIR/sns_to_obsidian-cws-v${VERSION}.zip"
+OUT_ZIP="$OUT_DIR/threads-clipper-for-obsidian-cws-v${VERSION}.zip"
 
 mkdir -p "$OUT_DIR"
 

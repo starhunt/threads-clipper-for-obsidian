@@ -54,4 +54,4 @@ This extension is not directed to children under 13.
 
 ## Contact
 
-GitHub repository issues: https://github.com/starhunt/sns_to_obsidian/issues
+GitHub repository issues: https://github.com/starhunt/threads-clipper-for-obsidian/issues
