@@ -102,14 +102,14 @@ function getDefaultPromptTemplate() {
     return i18n.getCurrentLanguage() === 'ko' ? DEFAULT_PROMPT_TEMPLATE_KO : DEFAULT_PROMPT_TEMPLATE_EN;
 }
 
-// AI Provider configurations
+// AI Provider configurations (flagship models as of 2026-05)
 const AI_PROVIDERS = {
-    openai: { defaultModel: 'gpt-4o', showEndpoint: false },
-    gemini: { defaultModel: 'gemini-2.0-flash', showEndpoint: false },
-    anthropic: { defaultModel: 'claude-3-5-sonnet-latest', showEndpoint: false },
-    grok: { defaultModel: 'grok-3', showEndpoint: false },
+    openai: { defaultModel: 'gpt-5.5', showEndpoint: false },
+    gemini: { defaultModel: 'gemini-3.5-flash', showEndpoint: false },
+    anthropic: { defaultModel: 'claude-opus-4-7', showEndpoint: false },
+    grok: { defaultModel: 'grok-4.3', showEndpoint: false },
     zai: {
-        defaultModel: 'GLM-4.5',
+        defaultModel: 'glm-5.1',
         showEndpoint: true,
         defaultEndpoint: 'https://api.z.ai/api/coding/paas/v4/chat/completions'
     },
@@ -121,7 +121,7 @@ const DEFAULT_SETTINGS = {
     language: 'auto',
     triggerOnLike: true,
     triggerOnSave: true,
-    saveMethod: 'rest',
+    saveMethod: 'uri',
     uriVaultMode: 'specified',
     protocol: 'http',
     host: 'localhost',
@@ -129,7 +129,7 @@ const DEFAULT_SETTINGS = {
     apiKey: '',
     vaultName: '',
     notesFolder: 'Threads',
-    useYearMonthFolders: false,
+    useYearMonthFolders: true,
     imageFolder: 'Threads_img',
     imageFolderMode: 'fixed',
     fileNameType: 'postDate',
@@ -146,17 +146,17 @@ const DEFAULT_SETTINGS = {
     aiMaxTokens: 64000,
     aiPromptTemplate: '',
     providerSettings: {
-        openai: { apiKey: '', model: 'gpt-4o-mini', endpoint: '' },
-        gemini: { apiKey: '', model: 'gemini-2.0-flash', endpoint: '' },
-        anthropic: { apiKey: '', model: 'claude-3-5-sonnet-latest', endpoint: '' },
-        grok: { apiKey: '', model: 'grok-3', endpoint: '' },
-        zai: { apiKey: '', model: 'GLM-4.5', endpoint: 'https://api.z.ai/api/coding/paas/v4/chat/completions' },
+        openai: { apiKey: '', model: 'gpt-5.5', endpoint: '' },
+        gemini: { apiKey: '', model: 'gemini-3.5-flash', endpoint: '' },
+        anthropic: { apiKey: '', model: 'claude-opus-4-7', endpoint: '' },
+        grok: { apiKey: '', model: 'grok-4.3', endpoint: '' },
+        zai: { apiKey: '', model: 'glm-5.1', endpoint: 'https://api.z.ai/api/coding/paas/v4/chat/completions' },
         custom: { apiKey: '', model: '', endpoint: '' }
     },
     aiProvider: 'openai',
     aiApiKey: '',
     aiEndpoint: '',
-    aiModel: 'gpt-4o-mini',
+    aiModel: 'gpt-5.5',
     aiApiKeys: {}
 };
 
@@ -341,7 +341,6 @@ function buildSettingsObject() {
 }
 
 async function saveSettings() {
-    const previousLanguage = (await chrome.storage.sync.get('settings'))?.settings?.language || 'auto';
     const { settings, providerSettings, activeProvider } = buildSettingsObject();
 
     // Request host permission for custom endpoints
@@ -371,11 +370,6 @@ async function saveSettings() {
     await chrome.storage.sync.set({ settings });
     showStatus(elements.saveStatus, `✅ ${i18n.getMessage('settingsSaved')}`, 'success');
     updateActiveProviderCard(activeProvider);
-
-    // Reload page if language changed so all i18n applies.
-    if (settings.language !== previousLanguage) {
-        setTimeout(() => location.reload(), 600);
-    }
 }
 
 async function saveSettingsQuietly() {
@@ -452,6 +446,20 @@ elements.testConnection.addEventListener('click', testConnection);
 elements.saveMethod.addEventListener('change', updateSaveMethodVisibility);
 elements.useYearMonthFolders.addEventListener('change', updateImageFolderModeVisibility);
 elements.collectComments.addEventListener('change', updateCommentOptionsVisibility);
+
+// Apply language change immediately so users see the switch without needing to
+// click Save (the language pref is independent of the rest of the form).
+elements.language.addEventListener('change', async () => {
+    const lang = elements.language.value;
+    const stored = await chrome.storage.sync.get('settings');
+    const merged = { ...DEFAULT_SETTINGS, ...stored.settings, language: lang };
+    await chrome.storage.sync.set({ settings: merged });
+    await i18n.init(lang);
+    i18n.applyTranslations(document);
+    // Refresh dynamic strings that depend on save method state
+    updateSaveMethodVisibility();
+    showStatus(elements.saveStatus, `✅ ${i18n.getMessage('settingsSaved')}`, 'success');
+});
 
 elements.aiActiveProvider.addEventListener('change', (e) => {
     updateActiveProviderCard(e.target.value);

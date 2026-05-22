@@ -24,7 +24,7 @@
   "languageAuto": { "message": "자동 (브라우저 언어)" },
   "languageEnglish": { "message": "English" },
   "languageKorean": { "message": "한국어" },
-  "languageHint": { "message": "변경 후 페이지가 새로고침됩니다." },
+  "languageHint": { "message": "변경 즉시 적용됩니다." },
 
   "triggerSettings": { "message": "트리거 설정" },
   "triggerDesc": { "message": "어떤 버튼을 클릭했을 때 저장할지 선택합니다." },

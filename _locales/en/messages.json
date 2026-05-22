@@ -24,7 +24,7 @@
   "languageAuto": { "message": "Auto (follow browser)" },
   "languageEnglish": { "message": "English" },
   "languageKorean": { "message": "한국어" },
-  "languageHint": { "message": "The page reloads after changing this." },
+  "languageHint": { "message": "Applied immediately when changed." },
 
   "triggerSettings": { "message": "Trigger Settings" },
   "triggerDesc": { "message": "Choose which actions trigger saving to Obsidian." },

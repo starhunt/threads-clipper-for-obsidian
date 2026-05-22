@@ -28,7 +28,7 @@
             <option value="en" data-i18n="languageEnglish">English</option>
             <option value="ko" data-i18n="languageKorean">한국어</option>
           </select>
-          <p class="setting-hint" data-i18n="languageHint">The page reloads after changing this.</p>
+          <p class="setting-hint" data-i18n="languageHint">Applied immediately when changed.</p>
         </div>
       </section>
 
@@ -64,10 +64,10 @@
         <div class="setting-item">
           <label for="saveMethod" data-i18n="saveMethodLabel">Save Method</label>
           <select id="saveMethod">
+            <option value="uri" selected data-i18n="saveMethodUri">Obsidian URI (no plugin required)</option>
             <option value="rest" data-i18n="saveMethodRest">REST API (Local REST API plugin)</option>
-            <option value="uri" data-i18n="saveMethodUri">Obsidian URI (no plugin required)</option>
           </select>
-          <p class="setting-hint" id="saveMethodHint" data-i18n="saveMethodRestHint">REST API: supports local image download, requires Local REST API plugin.</p>
+          <p class="setting-hint" id="saveMethodHint" data-i18n="saveMethodUriHint">URI: no extra plugin, but images stay as URL references.</p>
         </div>
 
         <!-- REST API Settings (shown when saveMethod=rest) -->
@@ -166,7 +166,7 @@
               </div>
               <div class="provider-field">
                 <label data-i18n="model">Model</label>
-                <input type="text" id="model-openai" placeholder="gpt-4o">
+                <input type="text" id="model-openai" placeholder="gpt-5.5">
               </div>
               <div class="provider-actions">
                 <button class="btn btn-sm test-provider-btn" data-provider="openai">🔍 <span data-i18n="testConnection">Test Connection</span></button>
@@ -190,7 +190,7 @@
               </div>
               <div class="provider-field">
                 <label data-i18n="model">Model</label>
-                <input type="text" id="model-gemini" placeholder="gemini-2.0-flash">
+                <input type="text" id="model-gemini" placeholder="gemini-3.5-flash">
               </div>
               <div class="provider-actions">
                 <button class="btn btn-sm test-provider-btn" data-provider="gemini">🔍 <span data-i18n="testConnection">Test Connection</span></button>
@@ -214,7 +214,7 @@
               </div>
               <div class="provider-field">
                 <label data-i18n="model">Model</label>
-                <input type="text" id="model-anthropic" placeholder="claude-3-5-sonnet-latest">
+                <input type="text" id="model-anthropic" placeholder="claude-opus-4-7">
               </div>
               <div class="provider-actions">
                 <button class="btn btn-sm test-provider-btn" data-provider="anthropic">🔍 <span data-i18n="testConnection">Test Connection</span></button>
@@ -238,7 +238,7 @@
               </div>
               <div class="provider-field">
                 <label data-i18n="model">Model</label>
-                <input type="text" id="model-grok" placeholder="grok-3">
+                <input type="text" id="model-grok" placeholder="grok-4.3">
               </div>
               <div class="provider-actions">
                 <button class="btn btn-sm test-provider-btn" data-provider="grok">🔍 <span data-i18n="testConnection">Test Connection</span></button>
@@ -266,7 +266,7 @@
               </div>
               <div class="provider-field">
                 <label data-i18n="model">Model</label>
-                <input type="text" id="model-zai" placeholder="GLM-4.5">
+                <input type="text" id="model-zai" placeholder="glm-5.1">
               </div>
               <div class="provider-actions">
                 <button class="btn btn-sm test-provider-btn" data-provider="zai">🔍 <span data-i18n="testConnection">Test Connection</span></button>
@@ -294,7 +294,7 @@
               </div>
               <div class="provider-field">
                 <label data-i18n="modelName">Model Name</label>
-                <input type="text" id="model-custom" placeholder="gpt-4o">
+                <input type="text" id="model-custom" placeholder="gpt-5.5">
               </div>
               <div class="provider-actions">
                 <button class="btn btn-sm test-provider-btn" data-provider="custom">🔍 <span data-i18n="testConnection">Test Connection</span></button>
@@ -341,7 +341,7 @@
 
         <div class="setting-item">
           <label class="toggle-label">
-            <input type="checkbox" id="useYearMonthFolders">
+            <input type="checkbox" id="useYearMonthFolders" checked>
             <span class="toggle-slider"></span>
             <span class="label-text" data-i18n="yearMonthFolders">Organize by Year/Month folders</span>
           </label>

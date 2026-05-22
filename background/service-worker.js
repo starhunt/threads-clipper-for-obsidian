@@ -53,8 +53,8 @@ const DEFAULT_SETTINGS = {
   triggerOnLike: true,
   triggerOnSave: true,
 
-  // Save method: 'rest' or 'uri'
-  saveMethod: 'rest',
+  // Save method: 'rest' or 'uri' (uri = no plugin required, default)
+  saveMethod: 'uri',
 
   // REST API settings
   protocol: 'http',
@@ -65,7 +65,7 @@ const DEFAULT_SETTINGS = {
   // Path settings
   vaultName: '',
   notesFolder: 'Threads',
-  useYearMonthFolders: false,
+  useYearMonthFolders: true,
   imageFolder: 'Threads_img',
   imageFolderMode: 'fixed', // 'fixed' or 'relative'
 
@@ -89,7 +89,7 @@ const DEFAULT_SETTINGS = {
   aiProvider: 'openai',
   aiApiKey: '',
   aiEndpoint: '',
-  aiModel: 'gpt-4o-mini',
+  aiModel: 'gpt-5.5',
   aiMaxTokens: 64000,
   aiApiKeys: {
     openai: '',
