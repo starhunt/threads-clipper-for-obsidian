@@ -389,6 +389,25 @@ async function saveSettings() {
         }
     }
 
+    // AI provider hosts live in optional_host_permissions, so make sure the active provider's
+    // origin is granted whenever AI is enabled — otherwise the first AI-backed save would fail
+    // with a fetch DOMException.
+    if (settings.aiEnabled) {
+        const activePs = providerSettings[activeProvider] || {};
+        const origin = resolveProviderOrigin(activeProvider, activePs.endpoint);
+        if (origin) {
+            const already = await chrome.permissions.contains({ origins: [origin] });
+            if (!already) {
+                const granted = await chrome.permissions.request({ origins: [origin] });
+                if (!granted) {
+                    const host = origin.replace(/^https?:\/\//, '').replace(/\/\*$/, '');
+                    showStatus(elements.saveStatus, `⚠️ ${i18n.getMessage('permissionDenied', host)}`, 'error');
+                    return;
+                }
+            }
+        }
+    }
+
     await chrome.storage.sync.set({ settings });
     showStatus(elements.saveStatus, `✅ ${i18n.getMessage('settingsSaved')}`, 'success');
     updateActiveProviderCard(activeProvider);
@@ -530,6 +549,37 @@ document.querySelectorAll('.test-provider-btn').forEach(btn => {
     });
 });
 
+// Map each provider to the host-permission origin we need at runtime. zai/custom can carry
+// user-overridden endpoints, so derive the origin from the typed value when present.
+const PROVIDER_ORIGINS = {
+    openai: 'https://api.openai.com/*',
+    gemini: 'https://generativelanguage.googleapis.com/*',
+    anthropic: 'https://api.anthropic.com/*',
+    grok: 'https://api.x.ai/*',
+    zai: 'https://api.z.ai/*'
+};
+
+function resolveProviderOrigin(provider, endpoint) {
+    if (provider === 'custom') {
+        if (!endpoint) return null;
+        try {
+            const url = new URL(endpoint);
+            return `${url.protocol}//${url.hostname}/*`;
+        } catch {
+            return null;
+        }
+    }
+    if (provider === 'zai' && endpoint && endpoint !== 'https://api.z.ai/api/coding/paas/v4/chat/completions') {
+        try {
+            const url = new URL(endpoint);
+            return `${url.protocol}//${url.hostname}/*`;
+        } catch {
+            return PROVIDER_ORIGINS.zai;
+        }
+    }
+    return PROVIDER_ORIGINS[provider] || null;
+}
+
 function toggleProviderCard(provider) {
     const body = document.getElementById(`body-${provider}`);
     const btn = document.querySelector(`.provider-card[data-provider="${provider}"] .provider-toggle-btn`);
@@ -567,20 +617,17 @@ async function testProviderConnection(provider) {
             return;
         }
 
-        // Custom endpoints land on user-provided hosts that aren't in manifest host_permissions.
-        // Ask for the host permission up front so the fetch in the service worker actually goes through.
-        if (provider === 'custom' && endpoint) {
-            try {
-                const url = new URL(endpoint);
-                const origin = `${url.protocol}//${url.hostname}/*`;
-                const granted = await chrome.permissions.request({ origins: [origin] });
-                if (!granted) {
-                    resultEl.textContent = `❌ ${i18n.getMessage('permissionDenied', url.hostname)}`;
-                    resultEl.className = 'test-result error';
-                    return;
-                }
-            } catch (e) {
-                // Invalid URL — let the fetch surface a clear error below.
+        // All AI provider hosts live in optional_host_permissions, so request the appropriate
+        // origin from the user before the service-worker fetch runs. chrome.permissions.request
+        // needs a user gesture — the Test Connection click satisfies that.
+        const originForProvider = resolveProviderOrigin(provider, endpoint);
+        if (originForProvider) {
+            const granted = await chrome.permissions.request({ origins: [originForProvider] });
+            if (!granted) {
+                const host = originForProvider.replace(/^https?:\/\//, '').replace(/\/\*$/, '');
+                resultEl.textContent = `❌ ${i18n.getMessage('permissionDenied', host)}`;
+                resultEl.className = 'test-result error';
+                return;
             }
         }
 

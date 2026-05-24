@@ -439,7 +439,7 @@
                         await navigator.clipboard.writeText(result.content);
                         clipboardOk = true;
                     } catch (clipErr) {
-                        console.warn('[Threads to Obsidian] Clipboard API failed, using fallback:', clipErr);
+                        console.debug('[Threads to Obsidian] Clipboard API failed, using fallback:', clipErr);
                         // execCommand fallback (유저 제스처 만료 시)
                         const ta = document.createElement('textarea');
                         ta.value = result.content;

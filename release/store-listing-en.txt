@@ -1,0 +1,90 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SHORT DESCRIPTION (max 132 chars)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Save Threads posts to Obsidian as Markdown notes — automatic on Like or Bookmark, with optional AI transformation.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DETAILED DESCRIPTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Threads Clipper for Obsidian saves the Threads posts you care about into your Obsidian vault as structured Markdown notes — the moment you tap Like or Bookmark on threads.net or threads.com. No copy-paste, no manual formatting.
+
+
+WHAT IT DOES
+
+💾  Auto-save on Like/Bookmark — no extra click. Tap ♡ or the bookmark button and the post becomes a note in your vault.
+
+📝  Clean Markdown with YAML frontmatter — author, post URL, timestamp, tags, topic, comment count, and thread length are stored as Obsidian properties so your note is fully searchable and graph-aware.
+
+🧵  Threads, reposts, quotes, carousels — multi-post threads keep their chained-post order; reposts and quotes are clearly marked in the frontmatter.
+
+🖼️  Image handling — keep the original CDN URL inline, or download images locally to your vault (REST mode only).
+
+💬  Comment collection (optional) — pull replies under a post into a dedicated section, with filters for author-only replies and minimum length.
+
+🤖  AI transformation (optional) — turn each post into a structured study note (executive summary, key concepts, detailed analysis, action items, Feynman explanation) using your own API key.
+
+🌐  English / 한국어 UI — auto-detected from your browser or switched on demand from the options page. Default prompt template follows the same language.
+
+
+TWO SAVE METHODS
+
+• Obsidian URI (default, no plugin required)
+  Notes are created via the obsidian://new URI through the clipboard and saved to the last active Obsidian vault. Easiest setup. Images stay as URL references.
+
+• Local REST API
+  Requires the Obsidian Local REST API community plugin. Enables direct vault writes, local image download, and richer error reporting.
+
+Switch between modes anytime in the options page.
+
+
+⚠️  IMPORTANT — PREFER THE POST DETAIL PAGE
+
+The Threads feed only renders the top-level post DOM, so chained thread items and reader comments are NOT available from the feed view. To capture the full thread plus replies into a single note:
+
+  1. Click into the post to open its detail page (URL pattern: /post/...).
+  2. Like ♡ or bookmark from there.
+  3. The extension captures every chained post in the thread and, if comment collection is enabled, the visible replies.
+
+Liking or bookmarking directly from the feed still works — the main post is saved correctly — but the rest of the thread and the discussion will be missing. For best results, open the detail page first.
+
+
+AI TRANSFORMATION (OPTIONAL)
+
+Off by default. When you enable it and configure a provider with your own API key, each saved note is transformed into a structured study format:
+
+  1. Executive Summary
+  2. Key Concepts (table)
+  3. Detailed Notes
+  4. Action Items
+  5. Feynman Explanation
+  6. Original post text (preserved at the bottom)
+
+Supported providers: OpenAI, Google Gemini, Anthropic Claude, xAI Grok, Z.AI GLM, and any OpenAI-compatible Custom/Local endpoint such as Ollama or LM Studio (API key optional for local endpoints). The transformation prompt template is fully editable.
+
+
+PRIVACY
+
+• All data — API keys, settings, statistics — is stored locally in Chrome storage. Nothing leaves your machine except:
+    – Calls to your Obsidian REST plugin on localhost, or use of the local clipboard for URI mode.
+    – Calls to the AI provider you configured, only when AI transformation is on, and only with the API key you supplied.
+
+• No analytics, no telemetry, no third-party trackers.
+
+• The extension only activates on threads.net and threads.com.
+
+
+REQUIREMENTS
+
+• Chrome 116 or newer.
+• An Obsidian vault on your machine.
+• (REST mode only) The Obsidian Local REST API community plugin, enabled and running.
+• (AI mode only) An API key from your chosen provider.
+
+
+SUPPORT
+
+Issues, feature requests, and source code:
+https://github.com/starhunt/threads-clipper-for-obsidian

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "__MSG_extDesc__",
   "default_locale": "en",
   "minimum_chrome_version": "116",
@@ -19,12 +19,7 @@
     "https://localhost/*",
     "https://127.0.0.1/*",
     "https://*.cdninstagram.com/*",
-    "https://*.fbcdn.net/*",
-    "https://api.openai.com/*",
-    "https://generativelanguage.googleapis.com/*",
-    "https://api.anthropic.com/*",
-    "https://api.x.ai/*",
-    "https://api.z.ai/*"
+    "https://*.fbcdn.net/*"
   ],
   "optional_host_permissions": [
     "https://api.openai.com/*",
