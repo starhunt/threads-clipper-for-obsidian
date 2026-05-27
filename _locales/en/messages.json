@@ -54,7 +54,7 @@
   "uriInfoLead": { "message": "📋 Notes are created via the obsidian://new URI through the clipboard." },
   "uriInfo1": { "message": "No additional plugin is required." },
   "uriInfo2": { "message": "Notes are saved to the last active Obsidian vault." },
-  "uriInfo3": { "message": "⚠️ Local image download is not supported (external URL references)." },
+  "uriInfo3": { "message": "⚠️ Images stay as external URL references. Switch to REST API mode to actually download them into the vault." },
   "uriInfo4": { "message": "⚠️ Clipboard content is temporarily replaced during save." },
   "uriVaultModeLabel": { "message": "URI Target Vault" },
   "uriVaultModeSpecified": { "message": "Save to the specified vault (uses Vault Name above)" },
@@ -106,6 +106,7 @@
   "nameFormatHint": { "message": "Format: @author_YYYYMMDD_HHmm.md" },
   "downloadImages": { "message": "Download Images Locally" },
   "downloadImagesHint": { "message": "When disabled, only URL links are saved" },
+  "downloadImagesUriNotice": { "message": "⚠️ URI mode cannot write to the vault directly. Switch to REST API mode to actually download images locally — until then images stay as URL references." },
   "showNotification": { "message": "Show Save Notification" },
 
   "commentsSection": { "message": "💬 Comment Collection" },

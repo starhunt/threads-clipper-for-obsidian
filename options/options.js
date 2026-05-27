@@ -131,7 +131,7 @@ const DEFAULT_SETTINGS = {
     notesFolder: 'Threads',
     useYearMonthFolders: true,
     imageFolder: 'Threads_img',
-    imageFolderMode: 'fixed',
+    imageFolderMode: 'relative',
     fileNameType: 'postDate',
     downloadImages: false,
     showNotification: true,
@@ -183,6 +183,7 @@ const elements = {
     imageFolderModeContainer: document.getElementById('imageFolderModeContainer'),
     fileNameType: document.getElementById('fileNameType'),
     downloadImages: document.getElementById('downloadImages'),
+    downloadImagesNotice: document.getElementById('downloadImagesNotice'),
     showNotification: document.getElementById('showNotification'),
     collectComments: document.getElementById('collectComments'),
     commentMaxCount: document.getElementById('commentMaxCount'),
@@ -216,21 +217,27 @@ function initializeProviderModels() {
 }
 
 // Bump SCHEMA_VERSION whenever new defaults should be force-applied to existing installs.
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 async function migrateSettings(stored) {
     // Pre-schema installs (v1.5.1 and earlier) saved settings without schemaVersion.
-    // Apply the new defaults for saveMethod and useYearMonthFolders one time so existing users
-    // see the v1.5.2+ defaults; subsequent user edits are preserved on later loads.
+    // Each bump applies the matching one-shot defaults so existing users pick up new
+    // recommended values once; subsequent user edits are preserved on later loads.
     const current = stored.settings || {};
-    if ((current.schemaVersion || 0) >= SCHEMA_VERSION) return current;
+    const prevVersion = current.schemaVersion || 0;
+    if (prevVersion >= SCHEMA_VERSION) return current;
 
-    const migrated = {
-        ...current,
-        saveMethod: DEFAULT_SETTINGS.saveMethod,
-        useYearMonthFolders: DEFAULT_SETTINGS.useYearMonthFolders,
-        schemaVersion: SCHEMA_VERSION
-    };
+    const migrated = { ...current };
+    if (prevVersion < 2) {
+        // v1.5.2 defaults
+        migrated.saveMethod = DEFAULT_SETTINGS.saveMethod;
+        migrated.useYearMonthFolders = DEFAULT_SETTINGS.useYearMonthFolders;
+    }
+    if (prevVersion < 3) {
+        // v1.5.7: image storage now defaults to note-folder-relative mode.
+        migrated.imageFolderMode = DEFAULT_SETTINGS.imageFolderMode;
+    }
+    migrated.schemaVersion = SCHEMA_VERSION;
     await chrome.storage.sync.set({ settings: migrated });
     return migrated;
 }
@@ -473,12 +480,18 @@ function updateSaveMethodVisibility() {
         : i18n.getMessage('saveMethodUriHint');
 
     elements.uriVaultModeContainer.style.display = isRest ? 'none' : 'block';
-    if (!isRest) {
-        elements.downloadImages.checked = false;
-        elements.downloadImages.disabled = true;
-    } else {
-        elements.downloadImages.disabled = false;
-    }
+    // Toggle stays enabled in both modes — REST is what actually writes the file,
+    // but we keep the URI-mode UI unlocked so users can pre-configure and see the
+    // notice explaining the requirement instead of a silent grey-out.
+    elements.downloadImages.disabled = false;
+    updateDownloadImagesNotice();
+}
+
+function updateDownloadImagesNotice() {
+    if (!elements.downloadImagesNotice) return;
+    const isUri = elements.saveMethod.value !== 'rest';
+    const isOn = elements.downloadImages.checked;
+    elements.downloadImagesNotice.style.display = isUri && isOn ? 'block' : 'none';
 }
 
 elements.saveSettings.addEventListener('click', saveSettings);
@@ -487,6 +500,7 @@ elements.testConnection.addEventListener('click', testConnection);
 elements.saveMethod.addEventListener('change', updateSaveMethodVisibility);
 elements.useYearMonthFolders.addEventListener('change', updateImageFolderModeVisibility);
 elements.collectComments.addEventListener('change', updateCommentOptionsVisibility);
+elements.downloadImages.addEventListener('change', updateDownloadImagesNotice);
 
 // Apply language change immediately so users see the switch without needing to
 // click Save (the language pref is independent of the rest of the form).

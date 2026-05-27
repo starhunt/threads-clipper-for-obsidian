@@ -54,7 +54,7 @@
   "uriInfoLead": { "message": "📋 클립보드를 통해 obsidian://new URI로 노트를 생성합니다." },
   "uriInfo1": { "message": "추가 플러그인 설치가 필요 없습니다" },
   "uriInfo2": { "message": "마지막 활성화된 Obsidian 볼트에 저장됩니다" },
-  "uriInfo3": { "message": "⚠️ 이미지 로컬 다운로드는 지원되지 않습니다 (외부 URL 참조)" },
+  "uriInfo3": { "message": "⚠️ 이미지는 외부 URL 참조 상태로 저장됩니다. 실제로 볼트에 다운로드하려면 REST API 모드로 전환하세요." },
   "uriInfo4": { "message": "⚠️ 저장 시 클립보드 내용이 일시적으로 대체됩니다" },
   "uriVaultModeLabel": { "message": "URI 저장 대상 볼트" },
   "uriVaultModeSpecified": { "message": "지정된 볼트에 저장 (위 볼트 이름 사용)" },
@@ -106,6 +106,7 @@
   "nameFormatHint": { "message": "형식: @작성자_YYYYMMDD_HHmm.md" },
   "downloadImages": { "message": "이미지 로컬 다운로드" },
   "downloadImagesHint": { "message": "비활성화 시 URL 링크만 저장" },
+  "downloadImagesUriNotice": { "message": "⚠️ URI 모드에서는 볼트에 직접 파일을 쓸 수 없습니다. 실제로 이미지를 로컬에 받으려면 REST API 모드로 전환하세요 — 그 전까지는 URL 참조만 저장됩니다." },
   "showNotification": { "message": "저장 완료 알림 표시" },
 
   "commentsSection": { "message": "💬 댓글 수집 설정" },

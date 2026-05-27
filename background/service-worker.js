@@ -67,7 +67,7 @@ const DEFAULT_SETTINGS = {
   notesFolder: 'Threads',
   useYearMonthFolders: true,
   imageFolder: 'Threads_img',
-  imageFolderMode: 'fixed', // 'fixed' or 'relative'
+  imageFolderMode: 'relative', // 'fixed' or 'relative' — relative keeps images alongside the matching year/month note folder
 
   // File naming
   fileNameType: 'postDate', // 'postDate' or 'saveDate'

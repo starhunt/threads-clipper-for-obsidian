@@ -642,6 +642,29 @@
         };
     }
 
+    // Replace truncated/short anchor display text with the full href so links
+    // like "huggingface.co/llmfa…" survive into Obsidian as the actual URL.
+    function expandTruncatedLinks(text, scope) {
+        if (!text || !scope) return text;
+        const anchors = scope.querySelectorAll('a[href^="http"]');
+        anchors.forEach(a => {
+            const href = a.href;
+            if (!href) return;
+            // Internal links are noise — we already capture profile/post URLs elsewhere.
+            if (href.includes('threads.net') || href.includes('threads.com') || href.includes('instagram.com')) return;
+            const displayed = (a.textContent || '').trim();
+            if (!displayed || displayed === href) return;
+            const isEllipsisTruncated = /[…]$|\.\.\.$/.test(displayed);
+            // Display text without a scheme but containing a domain/path is Threads' shortened form.
+            const looksLikeShortenedUrl = !/^https?:\/\//i.test(displayed) && /[./]/.test(displayed);
+            if (!isEllipsisTruncated && !looksLikeShortenedUrl) return;
+            if (text.includes(displayed)) {
+                text = text.split(displayed).join(href);
+            }
+        });
+        return text;
+    }
+
     // Extract post text content (optionally exclude topic text)
     function extractText(element, topicToRemove = null) {
         // Find the main text container
@@ -713,6 +736,10 @@
                 finalText = additionalContent;
             }
         }
+
+        // Threads renders external URLs as truncated previews (e.g. "huggingface.co/llmfa…").
+        // Swap each occurrence with the full href so the link survives the clipboard hop.
+        finalText = expandTruncatedLinks(finalText, element);
 
         return finalText;
     }
@@ -1183,6 +1210,9 @@
     // Convert post data to markdown
     function convertToMarkdown(postData) {
         const now = new Date();
+        // URI mode cannot write image files into the vault, so wikilink-based ![[…]] rendering
+        // would yield broken references. Honor the toggle only when REST is the actual writer.
+        const downloadEffective = settings.downloadImages && settings.saveMethod === 'rest';
 
         // Format dates in Seoul timezone (KST = UTC+9)
         const formatSeoulDate = (dateInput) => {
@@ -1281,7 +1311,7 @@
             postData.content.media.forEach((media) => {
                 if (media.type === 'image') {
                     imageIndex++;
-                    if (settings.downloadImages) {
+                    if (downloadEffective) {
                         const postDateForPath = postData.timestamp ? new Date(postData.timestamp) : new Date();
                         const imageFolderPath = getImageFolderPath(postDateForPath);
                         const localPath = `${imageFolderPath}/${generateFilename(postData).replace('.md', '')}_${imageIndex}.jpg`;
@@ -1307,7 +1337,7 @@
                     post.media.forEach((media) => {
                         if (media.type === 'image') {
                             chainImageIndex++;
-                            if (settings.downloadImages) {
+                            if (downloadEffective) {
                                 // Generate filename for chained post images
                                 const postDateForPath = postData.timestamp ? new Date(postData.timestamp) : new Date();
                                 const imageFolderPath = getImageFolderPath(postDateForPath);
