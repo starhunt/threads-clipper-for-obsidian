@@ -81,6 +81,12 @@ If you see a JSON response or the API documentation page, the plugin is running 
 
 > **Note**: Only the initial activation triggers a save. Unliking or unbookmarking does **not** save the post.
 
+### On mobile (iOS)
+
+The Chrome extension is desktop-only. For iOS there is a companion Scriptable
+script that turns the iOS share sheet into a one-tap "save to Obsidian" flow
+(default folder: `mobiletip/`). See [`mobile/README.md`](./mobile/README.md).
+
 ## AI Transformation (Optional)
 
 When enabled, AI analyzes posts and generates structured notes with:
