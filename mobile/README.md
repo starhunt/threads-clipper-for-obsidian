@@ -99,14 +99,49 @@ Change `folder` to whatever path you want. Nested paths work
 
 ## Optional: wrap in iOS Shortcuts
 
-If you'd rather have a custom button labeled "Save to Obsidian" in the share
-sheet (instead of going through *Scriptable → script picker*), wrap the call:
+By default the share sheet shows *Scriptable → script picker → Threads to
+Obsidian* — three taps after Share. Wrapping the script in a Shortcut gets
+that down to **one tap** with a label of your choice. Recipe takes ~2 minutes.
 
-1. Shortcuts app → **+** → **Add Action** → search **Run Script**
-   (Scriptable).
-2. Choose script **Threads to Obsidian**.
-3. Toggle **Show in Share Sheet** for the shortcut, accept **URLs** as input.
-4. Name the shortcut whatever you want it to look like in the share sheet.
+### Build it (one time)
 
-The shortcut then forwards the shared URL to the Scriptable script via
-`args.shortcutParameter`, which the script already handles.
+1. Open the **Shortcuts** app → **+** to create a new shortcut.
+2. Tap the search bar at the bottom → search **Run Script** → pick the action
+   under the **Scriptable** category (icon is purple/violet). The action lands
+   on the canvas as `Run Script Threads to Obsidian` (or similar default).
+3. Configure the action:
+   - **Script** → tap and pick `Threads to Obsidian`.
+   - Tap **Show More** to reveal the rest of the fields.
+   - **Texts** → tap the field → from the variable picker choose
+     **Shortcut Input**. (Even though the input is a URL, Scriptable's Run
+     Script action exposes it through this field; the script also reads
+     `args.urls` and `args.shortcutParameter`, so any path works.)
+   - **Show When Run** → **OFF** (runs silently — no Scriptable UI flash).
+   - **Run Script in App** → **OFF** (stays in Shortcuts, then jumps to
+     Obsidian via the URI; switching apps twice feels jankier).
+4. Tap the shortcut's name field at the top → rename to whatever you want to
+   see in the share sheet, e.g. **Threads → Obsidian**.
+5. Tap the **ⓘ** (info) button:
+   - **Show in Share Sheet** → **ON**.
+   - **Share Sheet Types** → keep only **URLs** (uncheck Images, Text, etc.)
+     so the shortcut doesn't clutter share menus from other apps.
+6. Tap **Done**.
+
+### Use it
+
+In Threads: tap a post → share icon → **Threads → Obsidian**. That's it. The
+Shortcut forwards the URL to the Scriptable script, the script copies the
+rendered Markdown to your clipboard and opens
+`obsidian://new?…&clipboard=true`, and Obsidian Mobile creates the note in
+your configured folder.
+
+### Tips
+
+- iOS may ask once whether to **Allow** the shortcut to open Obsidian. Tap
+  **Always Allow** so future runs are silent.
+- If you ever rename the Scriptable script, also re-pick it inside the
+  Shortcut — Shortcuts stores the link by name.
+- You can stack more actions on top of `Run Script` if you want to chain
+  behavior (e.g. log to a separate file, show a haptic confirmation). The
+  Scriptable action returns control to Shortcuts before opening Obsidian, so
+  follow-up actions run as expected.
