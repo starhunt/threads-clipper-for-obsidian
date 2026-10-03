@@ -175,11 +175,11 @@
             return;
         }
 
-        // Like buttons - Find div[role="button"] that contains svg[aria-label="좋아요"] or svg[aria-label="Like"]
+        // Like buttons - div[role="button"] 안의 "좋아요"/"Like" 아이콘을 찾는다.
+        // Threads는 라벨을 svg[aria-label]에서 <svg><title>로 옮겼으므로 둘 다 지원한다.
         if (settings.triggerOnLike) {
-            // Select SVGs with like aria-label
-            const likeSvgs = document.querySelectorAll('svg[aria-label="좋아요"], svg[aria-label="Like"]');
-            likeSvgs.forEach(svg => {
+            document.querySelectorAll('svg').forEach(svg => {
+                if (!LIKE_LABELS.includes(getSvgLabel(svg))) return;
                 // Find the parent button (div with role="button")
                 const button = svg.closest('div[role="button"]');
                 if (button && !button.dataset.threadsObsidianListening) {
@@ -268,6 +268,17 @@
         }, 100);
     }
 
+    // 좋아요(미활성) 상태 아이콘 라벨
+    const LIKE_LABELS = ['좋아요', 'Like'];
+
+    // SVG 아이콘 라벨 읽기: aria-label 우선, 없으면 <title> 텍스트
+    function getSvgLabel(svg) {
+        const ariaLabel = svg.getAttribute('aria-label');
+        if (ariaLabel) return ariaLabel.trim();
+        const title = svg.querySelector(':scope > title');
+        return title ? title.textContent.trim() : '';
+    }
+
     // Check if button is in active state
     function isButtonActive(button, type) {
         // Check for filled heart (liked) or filled bookmark (saved)
@@ -277,7 +288,7 @@
             return false;
         }
 
-        const ariaLabel = svg.getAttribute('aria-label');
+        const ariaLabel = getSvgLabel(svg);
 
         // For likes: Check if aria-label changed to "좋아요 취소" (Unlike) meaning it's now liked
         // Or check for filled state
