@@ -122,6 +122,12 @@ function buildApiUrl(settings, endpoint) {
   return `${baseUrl}${endpoint}`;
 }
 
+// Vault 경로를 세그먼트 단위로 인코딩 ("/"는 유지).
+// encodeURIComponent로 전체를 인코딩하면 "/"가 %2F가 되어 Local REST API가 404를 반환한다.
+function encodeVaultPath(path) {
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+
 // Get year/month path string (e.g., "2026/01")
 function getYearMonthPath(date) {
   const year = date.getFullYear();
@@ -174,7 +180,7 @@ async function saveToObsidian(noteData) {
 
   try {
     // Save the markdown note
-    const noteUrl = buildApiUrl(settings, `/vault/${encodeURIComponent(notePath)}`);
+    const noteUrl = buildApiUrl(settings, `/vault/${encodeVaultPath(notePath)}`);
     const noteResponse = await fetchWithTimeout(noteUrl, {
       method: 'PUT',
       headers,
@@ -232,7 +238,7 @@ async function saveImageToObsidian(settings, imageData, imageFolderPath) {
     headers['Authorization'] = `Bearer ${settings.apiKey}`;
   }
 
-  const imageUrl = buildApiUrl(settings, `/vault/${encodeURIComponent(imagePath)}`);
+  const imageUrl = buildApiUrl(settings, `/vault/${encodeVaultPath(imagePath)}`);
   const response = await fetchWithTimeout(imageUrl, {
     method: 'PUT',
     headers,
@@ -697,6 +703,11 @@ async function testConnection() {
   try {
     const response = await fetchWithTimeout(url, { headers }, 10000);
     if (response.ok) {
+      // "/"는 인증 없이도 200을 반환하므로 API 키 유효성은 authenticated 필드로 확인한다
+      const body = await response.json().catch(() => null);
+      if (body && body.authenticated === false) {
+        return { success: false, message: getHttpErrorMessage(401, self.i18n.getMessage('testConnection')) };
+      }
       return { success: true, message: 'Connected to Obsidian REST API' };
     } else {
       return { success: false, message: getHttpErrorMessage(response.status, self.i18n.getMessage('testConnection')) };
