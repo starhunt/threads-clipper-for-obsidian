@@ -1,4 +1,5 @@
 {
+  "toastPostNotReady": { "message": "Could not identify the current post. Wait for the page to finish loading and try saving again." },
   "extName": { "message": "Threads Clipper for Obsidian" },
   "extDesc": { "message": "Save Threads posts to Obsidian via Local REST API or Obsidian URI" },
 
