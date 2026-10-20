@@ -8,6 +8,8 @@
     const processedPosts = new Set();
     const MAX_PROCESSED_POSTS = 500;
     let settings = null;
+    const POST_SELECTOR = 'div[data-pressable-container="true"], article, [role="article"]';
+    let saveMenuContext = null;
 
     // AI progress tracking (per-post)
     const aiProgressTimers = new Map();
@@ -181,10 +183,10 @@
             document.querySelectorAll('svg').forEach(svg => {
                 if (!LIKE_LABELS.includes(getSvgLabel(svg))) return;
                 // Find the parent button (div with role="button")
-                const button = svg.closest('div[role="button"]');
+                const button = svg.closest('[role="button"], button');
                 if (button && !button.dataset.threadsObsidianListening) {
                     button.dataset.threadsObsidianListening = 'true';
-                    button.addEventListener('click', handleLikeClick);
+                    button.addEventListener('click', handleLikeClick, true);
                 }
             });
         }
@@ -201,70 +203,116 @@
         document.addEventListener('click', (event) => {
             // Check if clicked element or its parent is a save button
             const target = event.target;
-            const button = target.closest('div[role="button"], div[role="menuitem"]');
+            const button = target.closest?.('[role="button"], [role="menuitem"], button');
 
             if (!button) return;
 
             // Check if the button text is "저장" or "Save"
             const buttonText = button.textContent?.trim();
             if (buttonText === '저장' || buttonText === 'Save') {
-                handleSaveButtonClick(button);
+                handleSaveButtonClick();
+                saveMenuContext = null;
+            } else {
+                // Menus are portalled outside their post. Capture their owner before
+                // React opens the menu, and discard context on every other click.
+                const svg = button.querySelector('svg');
+                const label = button.getAttribute('aria-label') || (svg && getSvgLabel(svg));
+                const post = findPostElement(button);
+                saveMenuContext = post && ['더 보기', 'More'].includes(label)
+                    ? { post, id: getPostIdentity(post)?.id, page: window.location.href }
+                    : null;
             }
         }, true); // Use capture phase to catch before other handlers
     }
 
-    // Handle save button click from menu
-    function handleSaveButtonClick(button) {
-        // Find the post that this save action relates to
-        // On detail page, we can use the main post
-        // On feed, we need to track which post the menu was opened for
-
-        setTimeout(() => {
-            // On detail page, get the main post
-            if (window.location.pathname.includes('/post/')) {
-                const mainPost = document.querySelector('div[data-pressable-container="true"]');
-                if (mainPost) {
-                    processPost(mainPost, 'save');
-                }
-            } else {
-                // On feed, try to find the post from the menu context
-                // The menu is often a sibling or near the post container
-                // For now, show a message that feed save is not yet supported
-                showToast('ℹ️ ' + i18n.getMessage('toastDetailPage'));
-            }
-        }, 200);
+    // Resolve a post by its own permalink, never by DOM order or a quoted link.
+    function parsePostUrl(value) {
+        try {
+            const url = new URL(value, window.location.href);
+            if (!['threads.com', 'www.threads.com', 'threads.net', 'www.threads.net'].includes(url.hostname)) return null;
+            const match = url.pathname.match(/^\/@([^/]+)\/post\/([A-Za-z0-9_-]+)(?:\/|$)/);
+            return match ? { id: match[2], url: `${url.origin}/@${match[1]}/post/${match[2]}` } : null;
+        } catch { return null; }
     }
 
-    // Handle like button click
+    function getPostIdentity(post) {
+        // A nested quote's timestamp belongs to the quote, not its outer post.
+        for (const time of post.querySelectorAll('time')) {
+            if (time.closest(POST_SELECTOR) !== post) continue;
+            const identity = parsePostUrl(time.closest('a')?.href);
+            if (identity) return identity;
+        }
+        return null;
+    }
+
+    function isRenderedPost(post) {
+        if (!post?.isConnected || post.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
+        const style = window.getComputedStyle(post);
+        return post.getClientRects().length > 0 && style.visibility !== 'hidden' && style.visibility !== 'collapse';
+    }
+
+    function hasParentPost(post) {
+        let parent = post.parentElement?.closest(POST_SELECTOR);
+        while (parent) {
+            if (getPostIdentity(parent)) return true;
+            parent = parent.parentElement?.closest(POST_SELECTOR);
+        }
+        return false;
+    }
+
+    function findCurrentDetailPost() {
+        const current = parsePostUrl(window.location.href);
+        if (!current) return null;
+        const matches = Array.from(document.querySelectorAll(POST_SELECTOR)).filter(post =>
+            isRenderedPost(post) && !hasParentPost(post) &&
+            getPostIdentity(post)?.id === current.id);
+        // Ambiguous duplicates or an unfinished navigation must not save another post.
+        return matches.length === 1 ? matches[0] : null;
+    }
+
+    function getRelatedPosts(element) {
+        const scope = element.closest('[role="dialog"], [role="region"], main, [role="main"]') || element.parentElement;
+        return Array.from(scope?.querySelectorAll(POST_SELECTOR) || []).filter(post =>
+            isRenderedPost(post) && getPostIdentity(post) &&
+            !hasParentPost(post));
+    }
+
+    function handleSaveButtonClick() {
+        if (!parsePostUrl(window.location.href)) {
+            showToast('ℹ️ ' + i18n.getMessage('toastDetailPage'));
+            return;
+        }
+        // Resolve and extract synchronously in capture phase, before the menu closes
+        // or navigation changes the URL/DOM. No delayed document-wide query.
+        let post = findCurrentDetailPost();
+        if (saveMenuContext) {
+            const context = saveMenuContext;
+            post = context.page === window.location.href && isRenderedPost(context.post) &&
+                context.id && getPostIdentity(context.post)?.id === context.id ? context.post : null;
+        }
+        if (!post) {
+            showToast('⚠️ ' + i18n.getMessage('toastPostNotReady'));
+            return;
+        }
+        processPost(post, 'save');
+    }
+
     function handleLikeClick(event) {
         const button = event.currentTarget;
-
-        // Check if this is an activation (like) not a deactivation (unlike)
-        // We need to wait briefly for the UI to update
+        const svg = button.querySelector('svg');
+        // An unlike click must never save, even if a later click likes it again.
+        if (!svg || !LIKE_LABELS.includes(getSvgLabel(svg))) return;
+        const post = findPostElement(button);
+        const identity = post && getPostIdentity(post);
+        if (!identity || !isRenderedPost(post)) return;
+        const page = window.location.href;
+        const postData = extractPostData(post);
         setTimeout(() => {
-            const isNowLiked = isButtonActive(button, 'like');
-            if (isNowLiked) {
-                const postElement = findPostElement(button);
-                if (postElement) {
-                    processPost(postElement, 'like');
-                }
-            }
-        }, 100);
-    }
-
-    // Handle save button click
-    function handleSaveClick(event) {
-        const button = event.currentTarget;
-
-        // Check if this is an activation (save) not a deactivation (unsave)
-        setTimeout(() => {
-            const isNowSaved = isButtonActive(button, 'save');
-            if (isNowSaved) {
-                const postElement = findPostElement(button);
-                if (postElement) {
-                    processPost(postElement, 'save');
-                }
-            }
+            // React can detach or reuse both the post and the button during navigation.
+            if (window.location.href !== page || !button.isConnected ||
+                !isRenderedPost(post) || findPostElement(button) !== post ||
+                getPostIdentity(post)?.id !== identity.id) return;
+            if (isButtonActive(button, 'like')) processPost(post, 'like', postData);
         }, 100);
     }
 
@@ -293,6 +341,7 @@
         // For likes: Check if aria-label changed to "좋아요 취소" (Unlike) meaning it's now liked
         // Or check for filled state
         if (type === 'like') {
+            if (LIKE_LABELS.includes(ariaLabel)) return false;
             // If label is "좋아요 취소" or "Unlike", it means currently liked
             if (ariaLabel && (ariaLabel.includes('취소') || ariaLabel.toLowerCase().includes('unlike'))) {
                 return true;
@@ -326,7 +375,7 @@
     // Find the parent post element
     function findPostElement(button) {
         // Use data-pressable-container="true" as the post container
-        const container = button.closest('div[data-pressable-container="true"]');
+        const container = button.closest(POST_SELECTOR);
         if (container) {
             return container;
         }
@@ -346,17 +395,18 @@
     }
 
     // Process and save the post
-    async function processPost(postElement, trigger) {
-
+    async function processPost(postElement, trigger, snapshot = null) {
+        let postId;
         try {
-            const postData = extractPostData(postElement);
+            const postData = snapshot || extractPostData(postElement);
             if (!postData) {
                 console.error('Threads to Obsidian: Failed to extract post data');
                 return;
             }
 
             // Create unique ID for deduplication
-            const postId = `${postData.author.username}_${postData.timestamp || Date.now()}`;
+            postId = parsePostUrl(postData.url)?.id;
+            if (!postId) return;
             if (processedPosts.has(postId)) {
                 return;
             }
@@ -930,33 +980,7 @@
 
     // Extract post URL (specific post link, not feed URL)
     function extractPostUrl(element) {
-        // Try to find the post link from the time element's parent anchor
-        const timeEl = element.querySelector('time');
-        if (timeEl) {
-            const timeLink = timeEl.closest('a');
-            if (timeLink && timeLink.href.includes('/post/')) {
-                return timeLink.href;
-            }
-        }
-
-        // Try to find any link with /post/ in the element
-        const postLinks = element.querySelectorAll('a[href*="/post/"]');
-        if (postLinks.length > 0) {
-            // Get the first post link that looks like a direct post link
-            for (const link of postLinks) {
-                if (link.href.match(/\/@[\w.]+\/post\/[\w]+/)) {
-                    return link.href;
-                }
-            }
-        }
-
-        // If on a post detail page, use current URL
-        if (window.location.pathname.includes('/post/')) {
-            return window.location.href;
-        }
-
-        // Fallback: try to construct URL from author and any post ID found
-        return window.location.href;
+        return getPostIdentity(element)?.url || null;
     }
 
     // Detect post type
@@ -979,7 +1003,7 @@
         // On detail page, check if there are multiple posts by same author
         if (isDetailPage) {
             const author = data.author.username;
-            const allPosts = document.querySelectorAll('div[data-pressable-container="true"]');
+            const allPosts = getRelatedPosts(element);
             let sameAuthorCount = 0;
 
             allPosts.forEach(post => {
@@ -1037,7 +1061,7 @@
         // On detail page, collect consecutive posts by same author
         // Stop when encountering a different author (that's where comments begin)
         if (isDetailPage) {
-            const allPosts = Array.from(document.querySelectorAll('div[data-pressable-container="true"]'));
+            const allPosts = getRelatedPosts(element);
             let foundCurrentPost = false;
 
             // Use for...of so we can break out of the loop
@@ -1173,7 +1197,7 @@
         // 본문 스레드에서 이미 수집한 텍스트는 댓글에서 제외 (중복 방지)
         const chainedTexts = new Set((chainedPosts || []).map(p => (p.text || '').trim()).filter(Boolean));
 
-        const allPosts = Array.from(document.querySelectorAll('div[data-pressable-container="true"]'));
+        const allPosts = getRelatedPosts(element);
         let foundCurrentPost = false;
 
         for (const post of allPosts) {
